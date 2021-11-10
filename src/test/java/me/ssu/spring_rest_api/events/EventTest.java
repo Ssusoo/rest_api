@@ -2,8 +2,6 @@ package me.ssu.spring_rest_api.events;
 
 import org.junit.jupiter.api.Test;
 
-import javax.swing.*;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EventTest {
