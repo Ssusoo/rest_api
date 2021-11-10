@@ -2,8 +2,10 @@ package me.ssu.spring_rest_api.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +27,10 @@ public class EventControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    // TODO 기존 빈을 Test용 빈으로 대체
+    @MockBean
+    EventRepository eventRepository;
+
     @Test
     void createEvent() throws Exception {
         Event event = Event.builder()
@@ -43,6 +49,12 @@ public class EventControllerTest {
                 .limitOfEnrollment(100)
                 .location("강남역 D2 스타일 펙토리")
                 .build();
+
+        // TODO mock 객체 nullpoint 해결하기
+        event.setId(10);
+        Mockito.when(eventRepository.save(event))
+                .thenReturn(event);
+
         mockMvc.perform(post("/api/events")
                     // TODO Location 헤더에 생성된 이벤트 조회할 수 있는 URI 확인
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
