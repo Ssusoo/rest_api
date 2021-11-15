@@ -2,13 +2,11 @@ package me.ssu.spring_rest_api.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.ssu.spring_rest_api.common.TestDescrption;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,24 +29,13 @@ public class EventControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    // TODO 기존 빈을 Test용 빈으로 대체
-//    @MockBean
-//    EventRepository eventRepository;
-
     @Test
-    @TestDescrption("입력값이 제대로 들어오는 경우")
+    @TestDescrption("정상적으로 이벤트를 생성하는 테스트")
     void createEvent() throws Exception {
         EventDto event = EventDto.builder()
-                // TODO 입력값이 제대로 들어온 경우이기 때문에
-                // TODO id, free, offline 주석처리
-//                // TODO id, free, offline 값 제한하기
-//                .id(100)
-//                .free(true)
-//                // TODO location 값이 있을 때 true가 맞음.
-//                .offline(false)
-                .location("강남역 D2 스타일 펙토리")
                 .name("Spring")
                 .description("REST API Development with Spring")
+                .location("강남역 D2 스타일 펙토리")
                 .beginEnrollmentDateTime(LocalDateTime
                         .of(2021,12, 23, 21,50))
                 .closeEnrollmentDateTime(LocalDateTime
@@ -60,13 +47,7 @@ public class EventControllerTest {
                 .basePrice(100)
                 .maxPrice(200)
                 .limitOfEnrollment(100)
-                .build()
-        ;
-        // TODO mock 객체 nullpoint 해결하기
-        // TODO event object가 있어야 return이 가능함.
-        // TODO 예제에서 mockito 해제
-//        Mockito.when(eventRepository.save(event))
-//                .thenReturn(event);
+                .build();
 
         mockMvc.perform(post("/api/events")
                     // TODO Location 헤더에 생성된 이벤트 조회할 수 있는 URI 확인
@@ -81,9 +62,9 @@ public class EventControllerTest {
                 .andExpect(header().exists(HttpHeaders.LOCATION))
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
                 // TODO 입력값 제한하기
-                // TODO id 100이면 안되며, free가 true면 안 됨.
-                .andExpect(jsonPath("id").value(Matchers.not(100)))
-                .andExpect(jsonPath("free").value(Matchers.not(true)))
+                .andExpect(jsonPath("free").value(false))
+                .andExpect(jsonPath("offline").value(true))
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
         ;
     }
 
@@ -166,4 +147,4 @@ public class EventControllerTest {
                 .andExpect(jsonPath("$[0].rejectValue").exists())
         ;
     }
-} 
+}
