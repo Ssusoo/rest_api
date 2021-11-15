@@ -1,6 +1,7 @@
 package me.ssu.spring_rest_api.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.ssu.spring_rest_api.common.TestDescrption;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ public class EventControllerTest {
 //    EventRepository eventRepository;
 
     @Test
-    @DisplayName("입력값이 제대로 들어오는 경우")
+    @TestDescrption("입력값이 제대로 들어오는 경우")
     void createEvent() throws Exception {
         EventDto event = EventDto.builder()
                 // TODO 입력값이 제대로 들어온 경우이기 때문에
@@ -156,7 +157,13 @@ public class EventControllerTest {
         mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].objectName").exists())
+                .andExpect(jsonPath("$[0].field").exists())
+                .andExpect(jsonPath("$[0].defaultMessage").exists())
+                .andExpect(jsonPath("$[0].code").exists())
+                .andExpect(jsonPath("$[0].rejectValue").exists())
         ;
     }
-}
+} 
