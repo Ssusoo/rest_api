@@ -120,9 +120,38 @@ public class EventControllerTest {
     }
 
     @Test
-    @DisplayName("입력 데이터가 이상한 경우 Bad_Request 처리하기")
+    @DisplayName("입력 데이터가 없는 경우 Bad_Request 처리하기")
     void createEvent_Bad_Request_Empty_Input() throws Exception {
         EventDto eventDto = EventDto.builder().build();
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+
+    @Test
+    @DisplayName("입력 값의 날짜 데이터가 이상한 경우 Bad_Request 처리하기")
+    void createEvent_Bad_Request_Wrong_Input() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                // TODO 날짜 검증
+                .beginEnrollmentDateTime(LocalDateTime
+                        .of(2021,12, 26, 21,50))
+                .closeEnrollmentDateTime(LocalDateTime
+                        .of(2021,12, 25,22,30))
+                .beginEventDateTime(LocalDateTime
+                        .of(2021,12,24,22,55))
+                .endEventDateTime(LocalDateTime
+                        .of(2021,12,23,20,00))
+                // TODO Max가 Base보다 커야 함.
+                .basePrice(10000)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .build();
 
         mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
