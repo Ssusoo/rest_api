@@ -118,4 +118,16 @@ public class EventControllerTest {
                 .andExpect(status().isBadRequest())
        ;
     }
+
+    @Test
+    @DisplayName("입력 데이터가 이상한 경우 Bad_Request 처리하기")
+    void createEvent_Bad_Request_Empty_Input() throws Exception {
+        EventDto eventDto = EventDto.builder().build();
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest())
+        ;
+    }
 }

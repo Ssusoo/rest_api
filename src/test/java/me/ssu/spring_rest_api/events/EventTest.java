@@ -12,7 +12,9 @@ class EventTest {
                 .name("Inflearn Spring Rest API")
                 .description("REST API development with Spring")
                 .build();
-        assertThat(event).isNotNull();
+        assertThat(event).isNotNull()
+
+        ;
     }
 
     @Test
@@ -28,7 +30,9 @@ class EventTest {
 
         // Then
         assertThat(event.getName()).isEqualTo(name);
-        assertThat(event.getDescription()).isEqualTo(description);
+        assertThat(event.getDescription()).isEqualTo(description)
+
+        ;
     }
 }
 
