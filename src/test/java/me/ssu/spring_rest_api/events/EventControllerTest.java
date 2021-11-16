@@ -30,7 +30,7 @@ public class EventControllerTest {
     ObjectMapper objectMapper;
 
     @Test
-    @TestDescrption("정상적으로 이벤트를 생성하는 테스트")
+    @DisplayName("정상적으로 이벤트를 생성하는 테스트")
     void createEvent() throws Exception {
         EventDto event = EventDto.builder()
                 .name("Spring")
@@ -55,6 +55,7 @@ public class EventControllerTest {
                     .accept(MediaTypes.HAL_JSON)
                     .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
+                // TODO 201 상태인지 확인
                 .andExpect(status().isCreated())
                 // TODO id가 있는지 확인
                 .andExpect(jsonPath("id").exists())
@@ -65,6 +66,11 @@ public class EventControllerTest {
                 .andExpect(jsonPath("free").value(false))
                 .andExpect(jsonPath("offline").value(true))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
+                // TODO HATEOAS 적용하기
+                .andExpect(jsonPath("_link.self").exists())
+//                .andExpect(jsonPath("_link.profile").exists())
+                .andExpect(jsonPath("_link.query-events").exists())
+                .andExpect(jsonPath("_link.update-event").exists())
         ;
     }
 

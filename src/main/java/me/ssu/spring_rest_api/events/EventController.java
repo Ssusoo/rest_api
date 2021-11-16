@@ -1,7 +1,10 @@
 package me.ssu.spring_rest_api.events;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -14,9 +17,10 @@ import java.net.URI;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
+
 @Controller
 @RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
-public class EventController {
+public class EventController extends RepresentationModel {
 
     private final EventRepository eventRepository;
     private final ModelMapper modelMapper;
@@ -38,29 +42,32 @@ public class EventController {
 
         // TODO Validator 검증
         eventValidator.validate(eventDto, errors);
+
         if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }
 
+        // TODO Event Dto에 있는 것을 Event 타입의 인스턴스로 만들어 달라
         Event event = modelMapper.map(eventDto, Event.class);
-        event.update();
         Event newEvent = this.eventRepository.save(event);
 
-        URI createdUri = linkTo(EventController.class)
-                .slash(newEvent.getId())
-                .toUri();
 
-        return ResponseEntity.created(createdUri).body(event);
+        Integer eventId = newEvent.getId();
+        newEvent.update();
+
+        // TODO ControllerLinkBuilder -> WebMvcLinkBuilder
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class)
+                .slash(eventId);
+        URI createUri = selfLinkBuilder.toUri();
+
+        // TODO Resource -> EntityModel
+        EntityModel eventResource = EntityModel.of(newEvent);
+        eventResource.add(linkTo(EventController.class)
+                .slash(eventId)
+                .withRel("query-events"));
+        eventResource.add(selfLinkBuilder.withSelfRel());
+        eventResource.add(selfLinkBuilder.withRel("update-event"));
+
+        return ResponseEntity.created(createUri).body(eventResource);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
