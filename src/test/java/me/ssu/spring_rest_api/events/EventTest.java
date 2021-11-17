@@ -88,10 +88,3 @@ class EventTest {
         assertThat(event.isOffline()).isEqualTo(isOffline);
     }
 }
-
-
-
-
-
-
-
