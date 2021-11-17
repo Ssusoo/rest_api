@@ -52,7 +52,7 @@ public class EventControllerTest {
         mockMvc.perform(post("/api/events")
                     // TODO Location 헤더에 생성된 이벤트 조회할 수 있는 URI 확인
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .accept(MediaTypes.HAL_JSON)
+                    .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                     .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 // TODO 201 상태인지 확인
@@ -61,16 +61,16 @@ public class EventControllerTest {
                 .andExpect(jsonPath("id").exists())
                 // TODO Header 정보 Test(Type Safe Version)
                 .andExpect(header().exists(HttpHeaders.LOCATION))
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
                 // TODO 입력값 제한하기
                 .andExpect(jsonPath("free").value(false))
                 .andExpect(jsonPath("offline").value(true))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
                 // TODO HATEOAS 적용하기
-                .andExpect(jsonPath("_link.self").exists())
+                .andExpect(jsonPath("_links.self").exists())
 //                .andExpect(jsonPath("_link.profile").exists())
-                .andExpect(jsonPath("_link.query-events").exists())
-                .andExpect(jsonPath("_link.update-event").exists())
+                .andExpect(jsonPath("_links.query-events").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
         ;
     }
 
@@ -100,7 +100,7 @@ public class EventControllerTest {
         mockMvc.perform(post("/api/events")
                         // TODO Location 헤더에 생성된 이벤트 조회할 수 있는 URI 확인
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaTypes.HAL_JSON)
+                        .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())

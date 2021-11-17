@@ -1,10 +1,8 @@
 package me.ssu.spring_rest_api.events;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -15,12 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.validation.Valid;
 import java.net.URI;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @Controller
-@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
-public class EventController extends RepresentationModel {
+@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
+public class EventController {
 
     private final EventRepository eventRepository;
     private final ModelMapper modelMapper;
@@ -49,23 +46,22 @@ public class EventController extends RepresentationModel {
 
         // TODO Event Dto에 있는 것을 Event 타입의 인스턴스로 만들어 달라
         Event event = modelMapper.map(eventDto, Event.class);
+        // TODO 저장하기 전에 유료인지 무료인지 여부 업데이트
+        event.update();
         Event newEvent = this.eventRepository.save(event);
 
-
-        Integer eventId = newEvent.getId();
-        newEvent.update();
-
         // TODO ControllerLinkBuilder -> WebMvcLinkBuilder
-        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class)
-                .slash(eventId);
+        ControllerLinkBuilder selfLinkBuilder = linkTo(EventController.class)
+                .slash(newEvent.getId());
         URI createUri = selfLinkBuilder.toUri();
 
         // TODO Resource -> EntityModel
-        EntityModel eventResource = EntityModel.of(newEvent);
+        EventResource eventResource = new EventResource(event);
         eventResource.add(linkTo(EventController.class)
-                .slash(eventId)
+                .slash(newEvent.getId())
                 .withRel("query-events"));
-        eventResource.add(selfLinkBuilder.withSelfRel());
+        // TODO selfLink는 EventResource에 넣어줌.
+        // eventResource.add(selfLinkBuilder.withSelfRel());
         eventResource.add(selfLinkBuilder.withRel("update-event"));
 
         return ResponseEntity.created(createUri).body(eventResource);
