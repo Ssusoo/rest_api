@@ -18,12 +18,13 @@ public class EventValidator {
 //                    "BasePrice is wrong.");
 //            errors.rejectValue("maxPrice", "wrongValue",
 //                    "MaxPrice is wrong.");
-            // TODO Global Error(reject())
-            errors.reject("wrongPrices", "Values to prices are wrong");
+            // TODO ErrorsSerializer 등록 후 Global Error(reject()) 수정
+            errors.reject("wrongPrices", "Values fo prices are wrong");
         }
 
         // TODO 날짜 검증
         LocalDateTime endEventDateTime = eventDto.getEndEventDateTime();
+
         if (endEventDateTime.isBefore(eventDto.getBeginEventDateTime()) ||
         endEventDateTime.isBefore(eventDto.getCloseEnrollmentDateTime()) ||
         endEventDateTime.isBefore(eventDto.getBeginEventDateTime())) {

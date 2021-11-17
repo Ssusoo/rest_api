@@ -1,7 +1,6 @@
 package me.ssu.spring_rest_api.events;
 
 import lombok.*;
-import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -10,7 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor
 @Setter @Getter @EqualsAndHashCode(of = "id")
 @Entity
-public class Event extends RepresentationModel<Event> {
+public class Event {
 
     @Id @GeneratedValue
     private Integer id;
@@ -48,19 +47,3 @@ public class Event extends RepresentationModel<Event> {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
