@@ -1,5 +1,6 @@
 package me.ssu.spring_rest_api.events;
 
+import me.ssu.spring_rest_api.common.ErrorsResource;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -31,18 +32,29 @@ public class EventController {
         this.eventValidator = eventValidator;
     }
 
+    // TODO new ErrorsResource 리팩토링
+    private ResponseEntity<ErrorsResource> badRequests(Errors errors) {
+        return ResponseEntity.badRequest().body(new ErrorsResource(errors));
+    }
+
     @PostMapping
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto,
                                       Errors errors) {
+
+
+        // TODO errors -> new ErrorsResource(errors)
+        // TODO new ErrorsResource(errors) - > 리팩토링 badRequests
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return badRequests(errors);
         }
 
         // TODO Validator 검증
         eventValidator.validate(eventDto, errors);
 
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            // TODO 리팩토링 badRequests 재사용
+            // return ResponseEntity.badRequest().body(errors);
+            return badRequests(errors);
         }
 
         // TODO Event Dto에 있는 것을 Event 타입의 인스턴스로 만들어 달라
