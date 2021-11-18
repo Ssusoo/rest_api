@@ -191,14 +191,10 @@ public class EventControllerTest {
                 .name("Spring")
                 .description("REST API Development with Spring")
                 // TODO 날짜 검증
-                .beginEnrollmentDateTime(LocalDateTime
-                        .of(2021,12, 26, 21,50))
-                .closeEnrollmentDateTime(LocalDateTime
-                        .of(2021,12, 25,22,30))
-                .beginEventDateTime(LocalDateTime
-                        .of(2021,12,24,22,55))
-                .endEventDateTime(LocalDateTime
-                        .of(2021,12,23,20,00))
+                .beginEnrollmentDateTime(LocalDateTime.of(2021,12, 26, 21,50))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021,12, 25,22,30))
+                .beginEventDateTime(LocalDateTime.of(2021,12,24,22,55))
+                .endEventDateTime(LocalDateTime.of(2021,12,23,20,00))
                 // TODO Max가 Base보다 커야 함.
                 .basePrice(10000)
                 .maxPrice(200)
@@ -210,11 +206,14 @@ public class EventControllerTest {
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[0].objectName").exists())
-                .andExpect(jsonPath("$[0].field").exists())
-                .andExpect(jsonPath("$[0].defaultMessage").exists())
-                .andExpect(jsonPath("$[0].code").exists())
-                .andExpect(jsonPath("$[0].rejectValue").exists())
+                // TODO Unwrap 수정
+                // TODO $[0] -> content[0]
+                .andExpect(jsonPath("content[0].objectName").exists())
+                .andExpect(jsonPath("content[0].field").exists())
+                .andExpect(jsonPath("content[0].defaultMessage").exists())
+                .andExpect(jsonPath("content[0].code").exists())
+                // TODO 인덱스로 가는 링크 제공
+                .andExpect(jsonPath("_links.index").exists())
         ;
     }
 }
