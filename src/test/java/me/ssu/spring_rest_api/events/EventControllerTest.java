@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs
 @Import(RestDocsConfiguration.class)
+@ActiveProfiles("test")
 public class EventControllerTest {
 
     @Autowired
@@ -75,18 +77,15 @@ public class EventControllerTest {
                 .andExpect(jsonPath("free").value(false))
                 .andExpect(jsonPath("offline").value(true))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
-                // TODO HATEOAS 적용하기
-                .andExpect(jsonPath("_links.self").exists())
-//                .andExpect(jsonPath("_link.profile").exists())
-                .andExpect(jsonPath("_links.query-events").exists())
-                .andExpect(jsonPath("_links.update-event").exists())
                 // TODO RestDocs create-event 추가
                 // TODO link, Req, Res 필드와 헤더 문서화
                 .andDo(document("create-event",
                         links(
                                 linkWithRel("self").description("link to self"),
                                 linkWithRel("query-events").description("link to query events"),
-                                linkWithRel("update-event").description("link to update an existing event")
+                                linkWithRel("update-event").description("link to update an existing event"),
+                                // TODO profile 추가
+                                linkWithRel("profile").description("link to profile an existing event")
                         ),
                         // TODO 요청 헤더
                         requestHeaders(
@@ -131,7 +130,9 @@ public class EventControllerTest {
                                 // TODO Error(Success, self, query-events, update-event
                                 fieldWithPath("_links.self.href").description("link to self"),
                                 fieldWithPath("_links.query-events.href").description("link to query event list"),
-                                fieldWithPath("_links.update-event.href").description("link to update event list")
+                                fieldWithPath("_links.update-event.href").description("link to update event list"),
+                                // TODO profile 추가
+                                fieldWithPath("_links.profile.href").description("link to profile")
                         )
                 ))
         ;
