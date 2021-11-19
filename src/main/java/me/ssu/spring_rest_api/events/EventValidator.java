@@ -14,11 +14,12 @@ public class EventValidator {
         // TODO Field Error(rejectValue)와 Global Error(reject)
         if (eventDto.getBasePrice() > eventDto.getMaxPrice()
             && eventDto.getMaxPrice() != 0) {
+            // TODO Field Error(rejectValue)
 //            errors.rejectValue("basePrice", "wrongValue",
 //                    "BasePrice is wrong.");
 //            errors.rejectValue("maxPrice", "wrongValue",
 //                    "MaxPrice is wrong.");
-            // TODO ErrorsSerializer 등록 후 Global Error(reject()) 수정
+            // TODO Global Error(reject)
             errors.reject("wrongPrices", "Values fo prices are wrong");
         }
 
