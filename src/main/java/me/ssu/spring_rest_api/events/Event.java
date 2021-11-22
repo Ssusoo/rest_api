@@ -14,10 +14,10 @@ public class Event {
     @Id @GeneratedValue
     private Integer id;
 
-    // TODO ORDINAL보다 STRING
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
 
+    // TODO 입력제한 Dto
     private String name; // 이벤트 이름
     private String description; // 설명
     private LocalDateTime beginEnrollmentDateTime; // 등록 시작일시
@@ -29,8 +29,8 @@ public class Event {
     private int maxPrice; // 최고 금액(optional)
     private int limitOfEnrollment; // 등록 한도
 
-    private boolean offline;
-    private boolean free;
+    private boolean offline; // 온/오프라인
+    private boolean free; // 무료/유료
 
     public void update() {
         // TODO Update Free
