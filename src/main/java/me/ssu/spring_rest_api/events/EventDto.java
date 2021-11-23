@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor
 public class EventDto {
 
+    // TODO 입력제한 Dto
+    // TODO Bad_Request 처리
     @NotEmpty
     private String name; // 이벤트 이름
 
