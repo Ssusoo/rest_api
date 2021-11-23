@@ -7,7 +7,7 @@ import org.springframework.hateoas.ResourceSupport;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-// TODO ResourceSupport ->  RepresentationModel<Event>
+// TODO ResourceSupport ->  RepresentationModel<EventResource>
 // TODO Resource
 public class EventResource extends Resource<Event> {
 

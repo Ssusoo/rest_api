@@ -45,6 +45,8 @@ public class EventControllerTest {
     @Test
     @DisplayName("정상적으로 이벤트를 생성하는 테스트")
     void createEvent() throws Exception {
+
+        // TODO Event -> EventDto(입력값 제한하기)
         EventDto eventDto = EventDto.builder()
                 .name("Spring")
                 .description("REST API Development with Spring")
