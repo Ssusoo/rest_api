@@ -10,10 +10,10 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 @TestConfiguration
 public class RestDocsConfiguration {
 
-    @Bean
+    @Bean   // TODO Test에서 Bean Import 하기
     public RestDocsMockMvcConfigurationCustomizer restDocsMockMvcConfigurationCustomizer() {
         return configurer -> configurer.operationPreprocessors()
-                .withResponseDefaults(prettyPrint())
-                .withResponseDefaults(prettyPrint());
+                .withResponseDefaults(prettyPrint())    // 요청 본문 문서화
+                .withResponseDefaults(prettyPrint());   // 응답 본문 문서화
     }
 }

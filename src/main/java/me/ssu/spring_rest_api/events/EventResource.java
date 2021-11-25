@@ -1,14 +1,11 @@
 package me.ssu.spring_rest_api.events;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-// TODO ResourceSupport ->  RepresentationModel<EventResource>
-// TODO Resource
+// TODO Resource<Event>(2.1.0.RELEASE) -> EntityModel<Event>(2.2.5.RELEASE)
 public class EventResource extends Resource<Event> {
 
     public EventResource(Event event, Link... links) {

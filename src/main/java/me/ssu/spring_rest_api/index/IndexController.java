@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+// TODO ResourceSupport(2.1.0.RELEASE) -> RepresentationModel(2.2.5.RELEASE)
 @RestController
 public class IndexController {
 

@@ -43,7 +43,7 @@ public class EventController {
 
     // TODO new ErrorsResource 리팩토링
     private ResponseEntity<ErrorsResource> badRequests(Errors errors) {
-
+        // TODO 에러를 그냥 error로 던지는 게 아니라 ErrorsResource로 바꿔서 던짐.
         // TODO errors -> new ErrorsResource(errors)
         return ResponseEntity.badRequest().body(new ErrorsResource(errors));
     }
@@ -56,8 +56,8 @@ public class EventController {
         // TODO 입력값 제한하기 (201 -> 400)
         // TODO Bad_Request 응답 받기
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
-        // TODO new ErrorsResource(errors) - > 리팩토링 badRequests
         if (errors.hasErrors()) {
+            // return ResponseEntity.badRequest().body(errors);
             return badRequests(errors);
         }
 
@@ -65,9 +65,7 @@ public class EventController {
         // TODO Bad_Request 응답 받기
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         eventValidator.validate(eventDto, errors);
-
         if (errors.hasErrors()) {
-            // TODO 리팩토링 badRequests 재사용
             // return ResponseEntity.badRequest().body(errors);
             return badRequests(errors);
         }
@@ -88,38 +86,23 @@ public class EventController {
         // TODO Event -> EventDto
         Event newEvent = this.eventRepository.save(event);
 
-        // TODO ControllerLinkBuilder -> WebMvcLinkBuilder
+        // TODO HATEOAS 적용-1
+        // TODO ControllerLinkBuilder(2.1.0.RELEASE) -> WebMvcLinkBuilder(2.2.5.RELEASE)
         ControllerLinkBuilder selfLinkBuilder = linkTo(EventController.class)
                 .slash(newEvent.getId());
-        URI createUri = selfLinkBuilder.toUri();
+        URI createUri = selfLinkBuilder
+                .toUri();
 
-        // TODO Resource -> EntityModel
+        // TODO HATEOAS 적용-2
         EventResource eventResource = new EventResource(event);
-        eventResource.add(linkTo(EventController.class)
-                .slash(newEvent.getId())
-                .withRel("query-events"));
-
-        // TODO selfLink는 EventResource에 넣어줌.
-        // eventResource.add(selfLinkBuilder.withSelfRel());
+        // TODO _links.self, EventResource로 이동
+//        eventResource.add(selfLinkBuilder.withSelfRel());
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(selfLinkBuilder.withRel("update-event"));
 
-        // TODO profile 추가
+        // TODO REST Docs(profile) 추가
         eventResource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
+
         return ResponseEntity.created(createUri).body(eventResource);
-    }
-
-    @GetMapping
-    public ResponseEntity queryEvents(Pageable pageable,
-                                      PagedResourcesAssembler<Event> assembler) {
-        Page<Event> page = eventRepository.findAll(pageable);
-
-        // TODO
-        var pagedResources =
-                assembler.toResource(page, e -> new EventResource(e));
-
-        // TODO
-        // return ResponseEntity.ok(page);
-        // TODO
-        return ResponseEntity.ok(pagedResources);
     }
 }
