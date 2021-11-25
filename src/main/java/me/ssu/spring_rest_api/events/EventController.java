@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -105,4 +107,30 @@ public class EventController {
 
         return ResponseEntity.created(createUri).body(eventResource);
     }
+
+    // TODO Event 목록 조회 API
+    @GetMapping
+    public ResponseEntity queryEvent(Pageable pageable,
+                                     PagedResourcesAssembler<Event> assembler) {
+        // TODO 리소스로 변경하기 전(Event Data)
+        Page<Event> page = eventRepository.findAll(pageable);
+
+        // TODO Repository에서 받아온 Event를 리소스로 변경하기 위해 PagedResourcesAssembler<T> 사용함.
+        // TODO PagedResources<Resource<Event>>(2.1.0.RELEASE) -> PagedModel<EntityModel<Event>>(2.2.5.RELEASE)
+        // TODO toResource(2.1.0.RELEASE) -> toModel(2.2.5.RELEASE)
+//        PagedResources<Resource<Event>> pagedResources = assembler.toResource(page);
+
+        // TODO 리소스(toResource(page) -> 각각의 리소스로 변경(toResource(page, e -> new EventResource(e))
+        var pagedResources = assembler
+                .toResource(page, e -> new EventResource(e));
+
+        // TODO profile 추가
+        pagedResources.add(new Link("/docs/index.html#resources-events-list").withRel("profile"));
+
+        return ResponseEntity.ok(pagedResources);
+    }
 }
+
+
+
+

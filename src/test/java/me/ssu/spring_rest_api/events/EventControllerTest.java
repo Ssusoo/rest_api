@@ -2,6 +2,7 @@ package me.ssu.spring_rest_api.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.ssu.spring_rest_api.common.RestDocsConfiguration;
+import me.ssu.spring_rest_api.common.TestDescrption;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,6 +229,45 @@ public class EventControllerTest {
 //                .andExpect(jsonPath("$[0].rejectValue").exists()) // 입력 거절 받은 값
                 // TODO 인덱스로 가는 링크 제공
                 .andExpect(jsonPath("_links.index").exists())
+        ;
+    }
+    // TODO 이벤트 30개 만들기
+    @Autowired
+    EventRepository eventRepository;
+
+    private void generateEvent(int index) {
+        Event event = Event.builder()
+                .name("event" + index)
+                .description("test event")
+                .build();
+
+        this.eventRepository.save(event);
+    }
+    // TODO Event 목록 조회 API
+    @Test
+    @TestDescrption("30개의 이벤트를 10개씩 두 번째 페이지 조회하기")
+    public void queryEvents() throws Exception {
+        // TODO Given
+        IntStream.range(0, 30).forEach(i -> {
+            this.generateEvent(i);
+        });
+        // TODO When
+        mockMvc.perform(get("/api/events")
+                        .param("page", "1")
+                        .param("size", "10")
+                        // TODO 이름 역순으로
+                        .param("sort", "name,DESC")
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                // TODO 리소스에 하나의 링크 정보가 있는지 확인
+                // TODO 완벽한 HATEOAS가 아님(각각의 리소스에 링크가 달려야 함)
+                .andExpect(jsonPath("_links").exists())
+                // TODO 각각의 리소스에 링크가 정보가 있는지 확인
+                .andExpect(jsonPath("_embedded.eventList[0]._links").exists())
+                // TODO profile 링크확인
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("query-events"))
         ;
     }
 }
