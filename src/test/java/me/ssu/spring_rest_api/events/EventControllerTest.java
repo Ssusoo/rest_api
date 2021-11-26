@@ -78,7 +78,7 @@ public class EventControllerTest {
                 // TODO Header 정보 Test(Type Safe Version)
                 .andExpect(header().exists(HttpHeaders.LOCATION))
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
-                // TODO 비즈니스 로직 적용
+                // TODO 저장하기 전에 유료인지 무료인지 여부 업데이트(비즈니스 로직 적용)
                 .andExpect(jsonPath("free").value(false))
                 .andExpect(jsonPath("offline").value(true))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))

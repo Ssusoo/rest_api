@@ -32,6 +32,7 @@ public class Event {
     private boolean offline; // 온/오프라인
     private boolean free; // 무료/유료
 
+    // TODO 비즈니스 로직 적용
     public void update() {
         // TODO Update Free
         if (this.basePrice == 0 && this.maxPrice == 0) {

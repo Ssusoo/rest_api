@@ -30,10 +30,10 @@ public class EventController {
     // TODO Repository 등록
     private final EventRepository eventRepository;
 
-    // TODO ModelMapper EventDto
+    // TODO Model Mapper 입력값 제한하기
     private final ModelMapper modelMapper;
 
-    // TODO Validation
+    // TODO 특정한 값 Bad_Request 처리
     private final EventValidator eventValidator;
 
     public EventController(EventRepository eventRepository, ModelMapper modelMapper,
@@ -55,16 +55,14 @@ public class EventController {
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto,
                                       Errors errors) {
 
-        // TODO 입력값 제한하기 (201 -> 400)
-        // TODO Bad_Request 응답 받기
+        // TODO 일반적인 Bad_Request 처리
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         if (errors.hasErrors()) {
             // return ResponseEntity.badRequest().body(errors);
             return badRequests(errors);
         }
 
-        // TODO Validation 처리
-        // TODO Bad_Request 응답 받기
+        // TODO 특정한 값 Bad_Request 처리
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
@@ -81,7 +79,7 @@ public class EventController {
 //                .name(eventDto.getName())
 //                .build();
 
-        // TODO 저장하기 전에 유료인지 무료인지 여부 업데이트
+        // TODO 저장하기 전에 유료인지 무료인지 여부 업데이트(비즈니스 로직 적용)
         event.update();
 
         // TODO Repository
