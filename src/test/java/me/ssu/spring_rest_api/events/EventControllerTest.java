@@ -5,6 +5,7 @@ import me.ssu.spring_rest_api.common.RestDocsConfiguration;
 import me.ssu.spring_rest_api.common.TestDescrption;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,8 +25,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -279,6 +279,7 @@ public class EventControllerTest {
         return eventRepository.save(event);
     }
 
+    // TODO Event 조회 API-1
     @Test
     @DisplayName("기존의 이벤트를 하나 조회하기")
     void getEvent() throws Exception {
@@ -299,6 +300,7 @@ public class EventControllerTest {
         ;
     }
 
+    // TODO Event 조회 API-1
     @Test
     @DisplayName("없는 이벤트를 조회했을 때 404 응답받기")
     void getEvent404() throws Exception {
@@ -310,7 +312,114 @@ public class EventControllerTest {
                 .andExpect(status().isNotFound())
         ;
     }
+
+    // TODO Events 수정 API 정상적인 값 세팅
+    private Event generatesEvent(int index) {
+        Event event = Event.builder()
+                .name("event " + index)
+                .description("test event")
+                .location("강남역 D2 스타일 펙토리")
+                .beginEnrollmentDateTime(LocalDateTime.of(2021,12, 23, 21,50))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021,12, 24,22,30))
+                .beginEventDateTime(LocalDateTime.of(2021,12,25,22,55))
+                .endEventDateTime(LocalDateTime.of(2021,12,26,20,00))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .free(false)
+                .offline(true)
+                .eventStatus(EventStatus.DRAFT)
+                .build();
+
+        return eventRepository.save(event);
+    }
+
+    @Autowired
+    ModelMapper modelMapper;
+
+    // TODO 이벤트 수정 API-1
+    @Test
+    @DisplayName("이벤트를 정상적으로 수정하기")
+    void updateEvent() throws Exception{
+        // TODO Given
+        // TODO 이벤트 생성
+        Event event = generatesEvent(200); // setName = event + index
+        // TODO 이벤트를 수정할 DTO
+        EventDto eventDto = modelMapper.map(event, EventDto.class);
+        String eventName = "Updated Event";
+        eventDto.setName(eventName);    // 이름 수정
+
+        // TODO When & Then
+        mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").value(eventName))
+                .andExpect(jsonPath("_links.self").exists())
+        ;
+    }
+    // TODO 이벤트 수정 API-2
+    @Test
+    @DisplayName("입력값이 비어있는 경우 이벤트 수정 실패")
+    void updateEvent400_Empty() throws Exception{
+        // TODO Given
+        // TODO 이벤트 생성
+        Event event = generatesEvent(200); // setName = event + index
+        // TODO 이벤트를 수정할 DTO
+        EventDto eventDto = new EventDto();
+
+        // TODO When & Then
+        mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+    // TODO 이벤트 수정 API-3
+    @Test
+    @DisplayName("입력값이 잘못된 경우 이벤트 수정 실패")
+    void updateEvent400_Wrong() throws Exception{
+        // TODO Given
+        // TODO 이벤트 생성
+        Event event = generatesEvent(200); // setName = event + index
+        // TODO 이벤트를 수정할 DTO
+        EventDto eventDto = modelMapper.map(event, EventDto.class);
+        eventDto.setBasePrice(20000);
+        eventDto.setMaxPrice(1000);
+
+        // TODO When & Then
+        mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+    // TODO 이벤트 수정 API-4
+    @Test
+    @DisplayName("존재하지 않는 이벤트 수정 실패")
+    void updateEvent404_Wrong() throws Exception{
+        // TODO Given
+        // TODO 이벤트 생성
+        Event event = generatesEvent(200); // setName = event + index
+        // TODO 이벤트를 수정할 DTO
+        EventDto eventDto = modelMapper.map(event, EventDto.class);
+
+        // TODO When & Then
+        mockMvc.perform(put("/api/events/123123")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+        ;
+    }
 }
+
+
+
 
 
 

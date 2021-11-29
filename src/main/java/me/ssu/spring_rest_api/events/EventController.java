@@ -135,12 +135,51 @@ public class EventController {
         if (optionalEvent.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+
         // TODO 기존의 이벤트를 하나 조회하기
         Event event = optionalEvent.get();
         EventResource eventResource = new EventResource(event);
 
         // TODO profile 링크 추가
         eventResource.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
+
+        return ResponseEntity.ok(eventResource);
+    }
+
+    // TODO Events 수정 API
+    @PutMapping("/{id}")
+    public ResponseEntity updateEvent(@PathVariable Integer id,
+                                      @RequestBody @Valid EventDto eventDto,
+                                      Errors errors) {
+
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+
+        // TODO 입력값이 비어있는 경우
+        if (optionalEvent.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // TODO 일반적인 값 Bad_Request
+        if (errors.hasErrors()) {
+            return badRequests(errors);
+        }
+
+        // TODO 특정한 값 검증 Bad_Request
+        eventValidator.validate(eventDto, errors);
+        if (errors.hasErrors()) {
+            return badRequests(errors);
+        }
+
+        // TODO Events 수정 API
+        Event existingEvent = optionalEvent.get();
+        modelMapper.map(eventDto, existingEvent);
+        Event savedEvent = eventRepository.save(existingEvent);
+
+        // TODO 리소스
+        EventResource eventResource = new EventResource(savedEvent);
+
+        // TODO profile 링크 추가
+        eventResource.add(new Link("/docs/index.html#resources-events-update").withRel("profile"));
 
         return ResponseEntity.ok(eventResource);
     }
