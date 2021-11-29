@@ -7,19 +7,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
@@ -59,6 +55,7 @@ public class EventController {
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         if (errors.hasErrors()) {
             // return ResponseEntity.badRequest().body(errors);
+            // TODO Bad_Request 리팩토링
             return badRequests(errors);
         }
 
@@ -67,6 +64,7 @@ public class EventController {
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
             // return ResponseEntity.badRequest().body(errors);
+            // TODO Bad_Request 리팩토링
             return badRequests(errors);
         }
 
@@ -95,10 +93,10 @@ public class EventController {
 
         // TODO HATEOAS 적용-2
         EventResource eventResource = new EventResource(event);
-        // TODO _links.self, EventResource로 이동
-//        eventResource.add(selfLinkBuilder.withSelfRel());
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(selfLinkBuilder.withRel("update-event"));
+        // TODO _links.self, EventResource로 이동
+//        eventResource.add(selfLinkBuilder.withSelfRel());
 
         // TODO REST Docs(profile) 추가
         eventResource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
@@ -127,8 +125,23 @@ public class EventController {
 
         return ResponseEntity.ok(pagedResources);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity getEvent(@PathVariable Integer id) {
+
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+
+        // TODO 없는 이벤트를 조회할 경우
+        if (optionalEvent.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        // TODO 기존의 이벤트를 하나 조회하기
+        Event event = optionalEvent.get();
+        EventResource eventResource = new EventResource(event);
+
+        // TODO profile 링크 추가
+        eventResource.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
+
+        return ResponseEntity.ok(eventResource);
+    }
 }
-
-
-
-

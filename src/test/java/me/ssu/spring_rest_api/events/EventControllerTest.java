@@ -188,7 +188,10 @@ public class EventControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
+                // TODO Bad_Request
                 .andExpect(status().isBadRequest())
+                // TODO 인덱스로 가는 링크 제공
+                .andExpect(jsonPath("_links.index").exists())
         ;
     }
 
@@ -217,32 +220,25 @@ public class EventControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
+                // TODO Bad_Request
                 .andExpect(status().isBadRequest())
-                // TODO Unwrap 수정(Json에는 Unwrap가 적용 안 됨)
-                // TODO $[0](Error) -> content[0](ErrorsResource)
+                .andExpect(status().isBadRequest())
+                // TODO Bad_Request
+                //  응답처리(Body Message, $[0](Error)) 담기
+                // TODO 인덱스로 가는 링크 제공-2
+                //  Unwrap 수정(Json에는 Unwrap가 적용 안 됨)
+                //  $[0](Error) -> content[0](ErrorsResource)
                 .andExpect(jsonPath("content[0].objectName").exists())
-                .andExpect(jsonPath("content[0].field").exists()) // 어떤 필드에서 발생한 에러인지
                 .andExpect(jsonPath("content[0].defaultMessage").exists()) // 기본 메시지
                 .andExpect(jsonPath("content[0].code").exists()) // 에러 코드
                 // TODO Global Error에는 없기 때문에 에러 발생할 수 있음.
 //                .andExpect(jsonPath("$[0].field").exists()) // 어떤 필드에서 발생한 에러인지
 //                .andExpect(jsonPath("$[0].rejectValue").exists()) // 입력 거절 받은 값
-                // TODO 인덱스로 가는 링크 제공
+                // TODO 인덱스로 가는 링크 제공-1
                 .andExpect(jsonPath("_links.index").exists())
         ;
     }
-    // TODO 이벤트 30개 만들기
-    @Autowired
-    EventRepository eventRepository;
 
-    private void generateEvent(int index) {
-        Event event = Event.builder()
-                .name("event" + index)
-                .description("test event")
-                .build();
-
-        this.eventRepository.save(event);
-    }
     // TODO Event 목록 조회 API
     @Test
     @TestDescrption("30개의 이벤트를 10개씩 두 번째 페이지 조회하기")
@@ -251,13 +247,12 @@ public class EventControllerTest {
         IntStream.range(0, 30).forEach(i -> {
             this.generateEvent(i);
         });
-        // TODO When
+        // TODO When & Then
         mockMvc.perform(get("/api/events")
                         .param("page", "1")
                         .param("size", "10")
                         // TODO 이름 역순으로
-                        .param("sort", "name,DESC")
-                )
+                        .param("sort", "name,DESC"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 // TODO 리소스에 하나의 링크 정보가 있는지 확인
@@ -267,7 +262,60 @@ public class EventControllerTest {
                 .andExpect(jsonPath("_embedded.eventList[0]._links").exists())
                 // TODO profile 링크확인
                 .andExpect(jsonPath("_links.profile").exists())
+                // TODO REST Docs(문서화)
                 .andDo(document("query-events"))
         ;
     }
+    // TODO 이벤트 30개 만들기
+    @Autowired
+    EventRepository eventRepository;
+
+    private Event generateEvent(int index) {
+        Event event = Event.builder()
+                .name("event" + index)
+                .description("test event")
+                .build();
+
+        return eventRepository.save(event);
+    }
+
+    @Test
+    @DisplayName("기존의 이벤트를 하나 조회하기")
+    void getEvent() throws Exception {
+
+        // TODO Given
+        Event event = generateEvent(100);
+
+        // TODO When & Then
+        mockMvc.perform(get("/api/events/{id}", event.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").exists())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                // TODO REST Docs(문서화)
+                .andDo(document("get-an-event"))
+        ;
+    }
+
+    @Test
+    @DisplayName("없는 이벤트를 조회했을 때 404 응답받기")
+    void getEvent404() throws Exception {
+
+        // TODO When & Then
+        mockMvc.perform(get("/api/events/123123"))
+                .andDo(print())
+                // TODO 없는 이벤트를 조회할 때
+                .andExpect(status().isNotFound())
+        ;
+    }
 }
+
+
+
+
+
+
+
+
