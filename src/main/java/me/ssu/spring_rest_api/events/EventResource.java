@@ -14,8 +14,6 @@ public class EventResource extends Resource<Event> {
         // add(new Link("http://localhost:8080/api/events/"+ event.getId()));
         add(linkTo(EventController.class).slash(event.getId()).withSelfRel());
     }
-
-
     //    @JsonUnwrapped
 //    private Event event;
 //

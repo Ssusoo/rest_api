@@ -29,7 +29,7 @@ public class EventController {
     // TODO Model Mapper 입력값 제한하기
     private final ModelMapper modelMapper;
 
-    // TODO 특정한 값 Bad_Request 처리
+    // TODO Global Error
     private final EventValidator eventValidator;
 
     public EventController(EventRepository eventRepository, ModelMapper modelMapper,
@@ -51,7 +51,7 @@ public class EventController {
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto,
                                       Errors errors) {
 
-        // TODO 일반적인 Bad_Request 처리
+        // TODO Field Error
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         if (errors.hasErrors()) {
             // return ResponseEntity.badRequest().body(errors);
@@ -59,7 +59,7 @@ public class EventController {
             return badRequests(errors);
         }
 
-        // TODO 특정한 값 Bad_Request 처리
+        // TODO Global Error
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {

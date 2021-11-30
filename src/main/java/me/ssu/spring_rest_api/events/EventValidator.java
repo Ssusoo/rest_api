@@ -11,14 +11,8 @@ public class EventValidator {
     public void validate(EventDto eventDto, Errors errors) {
         // TODO 무제한경매 (basePrice(100)이고 maxPrice(0)일 때 적용
         // TODO 아래의 경우가 잘못된 거임.
-        // TODO Field Error(rejectValue)와 Global Error(reject)
         if (eventDto.getBasePrice() > eventDto.getMaxPrice()
             && eventDto.getMaxPrice() != 0) {
-            // TODO Field Error(rejectValue)
-//            errors.rejectValue("basePrice", "wrongValue",
-//                    "BasePrice is wrong.");
-//            errors.rejectValue("maxPrice", "wrongValue",
-//                    "MaxPrice is wrong.");
             // TODO Global Error(reject)
             errors.reject("wrongPrices", "Values fo prices are wrong");
         }

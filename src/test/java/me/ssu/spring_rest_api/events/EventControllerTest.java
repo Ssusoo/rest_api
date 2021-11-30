@@ -190,6 +190,12 @@ public class EventControllerTest {
                 .andDo(print())
                 // TODO Bad_Request
                 .andExpect(status().isBadRequest())
+                // TODO Filed Error
+                .andExpect(jsonPath("content[0].objectName").exists())
+                .andExpect(jsonPath("content[0].defaultMessage").exists()) // 기본 메시지
+                .andExpect(jsonPath("content[0].code").exists()) // 에러 코드
+                .andExpect(jsonPath("content[0].field").exists()) // 어떤 필드에서 발생한 에러인지
+//                .andExpect(jsonPath("content[0].rejectValue").exists()) // 입력 거절 받은 값
                 // TODO 인덱스로 가는 링크 제공
                 .andExpect(jsonPath("_links.index").exists())
         ;
@@ -223,7 +229,7 @@ public class EventControllerTest {
                 // TODO Bad_Request
                 .andExpect(status().isBadRequest())
                 .andExpect(status().isBadRequest())
-                // TODO Bad_Request
+                // TODO Global Error
                 //  응답처리(Body Message, $[0](Error)) 담기
                 // TODO 인덱스로 가는 링크 제공-2
                 //  Unwrap 수정(Json에는 Unwrap가 적용 안 됨)
@@ -231,9 +237,6 @@ public class EventControllerTest {
                 .andExpect(jsonPath("content[0].objectName").exists())
                 .andExpect(jsonPath("content[0].defaultMessage").exists()) // 기본 메시지
                 .andExpect(jsonPath("content[0].code").exists()) // 에러 코드
-                // TODO Global Error에는 없기 때문에 에러 발생할 수 있음.
-//                .andExpect(jsonPath("$[0].field").exists()) // 어떤 필드에서 발생한 에러인지
-//                .andExpect(jsonPath("$[0].rejectValue").exists()) // 입력 거절 받은 값
                 // TODO 인덱스로 가는 링크 제공-1
                 .andExpect(jsonPath("_links.index").exists())
         ;
