@@ -181,7 +181,7 @@ public class EventControllerTest {
 
     @Test
     @DisplayName("입력 데이터가 없는 경우 Bad_Request 처리하기")
-    void createEvent_Bad_Request_Empty_Input() throws Exception {
+    void create_Bad_Request_Field_Error() throws Exception {
         EventDto eventDto = EventDto.builder().build();
 
         mockMvc.perform(post("/api/events")
@@ -203,7 +203,7 @@ public class EventControllerTest {
 
     @Test
     @DisplayName("입력 값의 날짜 데이터가 이상한 경우 Bad_Request 처리하기")
-    void createEvent_Bad_Request_Wrong_Input() throws Exception {
+    void createEvent_Bad_Request_Global_Error() throws Exception {
         EventDto eventDto = EventDto.builder()
                 .name("Spring")
                 .description("REST API Development with Spring")
