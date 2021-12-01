@@ -241,8 +241,19 @@ public class EventControllerTest {
                 .andExpect(jsonPath("_links.index").exists())
         ;
     }
+    // TODO Event 30개 만들기
+    @Autowired
+    EventRepository eventRepository;
 
-    // TODO Event 목록 조회 API
+    private Event generateEvent(int index) {
+        Event event = Event.builder()
+                .name("event" + index)
+                .description("test event")
+                .build();
+
+        return eventRepository.save(event);
+    }
+    // TODO Event 전체 조회 API
     @Test
     @TestDescrption("30개의 이벤트를 10개씩 두 번째 페이지 조회하기")
     public void queryEvents() throws Exception {
@@ -269,54 +280,8 @@ public class EventControllerTest {
                 .andDo(document("query-events"))
         ;
     }
-    // TODO 이벤트 30개 만들기
-    @Autowired
-    EventRepository eventRepository;
-
-    private Event generateEvent(int index) {
-        Event event = Event.builder()
-                .name("event" + index)
-                .description("test event")
-                .build();
-
-        return eventRepository.save(event);
-    }
-
-    // TODO Event 조회 API-1
-    @Test
-    @DisplayName("기존의 이벤트를 하나 조회하기")
-    void getEvent() throws Exception {
-
-        // TODO Given
-        Event event = generateEvent(100);
-
-        // TODO When & Then
-        mockMvc.perform(get("/api/events/{id}", event.getId()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("name").exists())
-                .andExpect(jsonPath("id").exists())
-                .andExpect(jsonPath("_links.self").exists())
-                .andExpect(jsonPath("_links.profile").exists())
-                // TODO REST Docs(문서화)
-                .andDo(document("get-an-event"))
-        ;
-    }
-
-    // TODO Event 조회 API-1
-    @Test
-    @DisplayName("없는 이벤트를 조회했을 때 404 응답받기")
-    void getEvent404() throws Exception {
-
-        // TODO When & Then
-        mockMvc.perform(get("/api/events/123123"))
-                .andDo(print())
-                // TODO 없는 이벤트를 조회할 때
-                .andExpect(status().isNotFound())
-        ;
-    }
-
-    // TODO Events 수정 API 정상적인 값 세팅
+    // TODO 이벤트 개별 조회 API-1
+    // TODO 정상적인 값 세팅하기
     private Event generatesEvent(int index) {
         Event event = Event.builder()
                 .name("event " + index)
@@ -335,6 +300,32 @@ public class EventControllerTest {
                 .build();
 
         return eventRepository.save(event);
+    }
+    // TODO Event 개별 조회 API-2
+    @Test
+    @DisplayName("기본 이벤트에서 하나 조회하기")
+    void getEvent() throws Exception {
+        // TODO Given
+        Event event = generatesEvent(100);
+
+        mockMvc.perform(get("/api/events/{id}", event.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                // TODO EventData에 _links 담기
+                .andExpect(jsonPath("_links").exists())
+                // TODO 문서화
+                .andExpect(jsonPath("_links.profile").exists())
+        ;
+    }
+    // TODO Event 개별 조회 API-3
+    @Test
+    @DisplayName("조회 데이터가 없는 경우")
+    void getEvent_404() throws Exception {
+        // TODO When & Then
+        mockMvc.perform(get("/api/events/1231234"))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+        ;
     }
 
     @Autowired
@@ -420,14 +411,3 @@ public class EventControllerTest {
         ;
     }
 }
-
-
-
-
-
-
-
-
-
-
-

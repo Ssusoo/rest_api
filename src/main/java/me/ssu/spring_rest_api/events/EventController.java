@@ -126,22 +126,23 @@ public class EventController {
         return ResponseEntity.ok(pagedResources);
     }
 
-    // TODO Event 개별 조회 API
+    // TODO 이벤트 개별 조회 API
     @GetMapping("/{id}")
     public ResponseEntity getEvent(@PathVariable Integer id) {
 
+        // TODO Event Data
         Optional<Event> optionalEvent = eventRepository.findById(id);
 
-        // TODO 없는 이벤트를 조회할 경우
+        // TODO 조회한 데이터가 없는 경우
         if (optionalEvent.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        // TODO 기존의 이벤트를 하나 조회하기
+        // TODO 하나의 데이터 조회
         Event event = optionalEvent.get();
         EventResource eventResource = new EventResource(event);
 
-        // TODO profile 링크 추가
+        // TODO 문서화
         eventResource.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
 
         return ResponseEntity.ok(eventResource);
