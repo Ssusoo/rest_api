@@ -104,7 +104,7 @@ public class EventController {
         return ResponseEntity.created(createUri).body(eventResource);
     }
 
-    // TODO Event 목록 조회 API
+    // TODO Event 전체 조회 API
     @GetMapping
     public ResponseEntity queryEvent(Pageable pageable,
                                      PagedResourcesAssembler<Event> assembler) {
@@ -118,7 +118,7 @@ public class EventController {
 
         // TODO 리소스(toResource(page) -> 각각의 리소스로 변경(toResource(page, e -> new EventResource(e))
         var pagedResources = assembler
-                .toResource(page, e -> new EventResource(e));
+                .toResource(page, entity -> new EventResource(entity));
 
         // TODO profile 추가
         pagedResources.add(new Link("/docs/index.html#resources-events-list").withRel("profile"));
@@ -126,6 +126,7 @@ public class EventController {
         return ResponseEntity.ok(pagedResources);
     }
 
+    // TODO Event 개별 조회 API
     @GetMapping("/{id}")
     public ResponseEntity getEvent(@PathVariable Integer id) {
 
