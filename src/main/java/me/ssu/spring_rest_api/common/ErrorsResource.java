@@ -16,5 +16,3 @@ public class ErrorsResource extends Resource<Errors> {
         add(linkTo(methodOn(IndexController.class).index()).withRel("index"));
     }
 }
-
-
