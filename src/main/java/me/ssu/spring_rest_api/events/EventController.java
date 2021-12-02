@@ -114,6 +114,7 @@ public class EventController {
         // TODO Repository에서 받아온 Event를 리소스로 변경하기 위해 PagedResourcesAssembler<T> 사용함.
         // TODO PagedResources<Resource<Event>>(2.1.0.RELEASE) -> PagedModel<EntityModel<Event>>(2.2.5.RELEASE)
         // TODO toResource(2.1.0.RELEASE) -> toModel(2.2.5.RELEASE)
+        //
 //        PagedResources<Resource<Event>> pagedResources = assembler.toResource(page);
 
         // TODO 리소스(toResource(page) -> 각각의 리소스로 변경(toResource(page, e -> new EventResource(e))
@@ -130,7 +131,7 @@ public class EventController {
     @GetMapping("/{id}")
     public ResponseEntity getEvent(@PathVariable Integer id) {
 
-        // TODO Event Data
+        // TODO DB Data Optional에 담기
         Optional<Event> optionalEvent = eventRepository.findById(id);
 
         // TODO 조회한 데이터가 없는 경우
@@ -138,12 +139,15 @@ public class EventController {
             return ResponseEntity.notFound().build();
         }
 
-        // TODO 하나의 데이터 조회
+        // TODO Event 객체에 담기
         Event event = optionalEvent.get();
+
+        // TODO 리소스화 하기
         EventResource eventResource = new EventResource(event);
 
         // TODO 문서화
-        eventResource.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
+        eventResource.add(new Link("/docs/index.html#resources-events-get")
+                .withRel("profile"));
 
         return ResponseEntity.ok(eventResource);
     }
@@ -153,7 +157,7 @@ public class EventController {
     public ResponseEntity updateEvent(@PathVariable Integer id,
                                       @RequestBody @Valid EventDto eventDto,
                                       Errors errors) {
-
+        // TODO Optional 검증
         Optional<Event> optionalEvent = eventRepository.findById(id);
 
         // TODO 입력값이 비어있는 경우
@@ -161,26 +165,28 @@ public class EventController {
             return ResponseEntity.notFound().build();
         }
 
-        // TODO 일반적인 값 Bad_Request
+        // TODO Field Error
         if (errors.hasErrors()) {
             return badRequests(errors);
         }
 
-        // TODO 특정한 값 검증 Bad_Request
+        // TODO Global Error
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
             return badRequests(errors);
         }
 
-        // TODO Events 수정 API
+        // TODO Data를 Event 객체에 담기
         Event existingEvent = optionalEvent.get();
+
+        // TODO Event 수정
         modelMapper.map(eventDto, existingEvent);
         Event savedEvent = eventRepository.save(existingEvent);
 
-        // TODO 리소스
+        // TODO Data를 리소스화하기
         EventResource eventResource = new EventResource(savedEvent);
 
-        // TODO profile 링크 추가
+        // TODO 문서화(profile)
         eventResource.add(new Link("/docs/index.html#resources-events-update").withRel("profile"));
 
         return ResponseEntity.ok(eventResource);
