@@ -305,8 +305,8 @@ public class EventControllerTest {
                 .andDo(print())
                 // TODO 200 응답 확인(응답을 성공적으로 처리함)
                 .andExpect(status().isOk())
-                // TODO EventData에 _links 담기
-                .andExpect(jsonPath("_links").exists())
+                // TODO Event Data에 _links.self 담기
+                .andExpect(jsonPath("_links.self").exists())
                 // TODO 문서화
                 .andExpect(jsonPath("_links.profile").exists())
         ;
@@ -326,52 +326,59 @@ public class EventControllerTest {
     @Autowired
     ModelMapper modelMapper;
     @Test
-    @DisplayName("이벤트를 정상적으로 수정하기")
-    void updateEvent() throws Exception{
+    @DisplayName("정상적으로 수정한 경우")
+    void updateEvent() throws Exception {
         // TODO Given(이벤트 생성)
-        Event event = generatesEvent(200); // setName = event + index
-        // TODO 이벤트를 수정할 DTO
+        Event event = generatesEvent(100);
+
+        // TODO 이벤트 수정
         EventDto eventDto = modelMapper.map(event, EventDto.class);
         String eventName = "Updated Event";
-        eventDto.setName(eventName);    // 이름 수정
+        eventDto.setName(eventName);
 
-        // TODO When & Then
         mockMvc.perform(put("/api/events/{id}", event.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
+                        .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
-                // TODO 200 응답 확인(응답을 성공적으로 처리함)
+                // TODO 200 응답 받기(요청을 성공적으로 처리함)
                 .andExpect(status().isOk())
+                // TODO 수정한 이름이 존재하는지
                 .andExpect(jsonPath("name").value(eventName))
+                // TODO 리소스화(_Links.self)
                 .andExpect(jsonPath("_links.self").exists())
+                // TODO 문서화
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("events-update"))
         ;
     }
     // TODO 이벤트 수정 API-2
     @Test
-    @DisplayName("입력값이 비어있는 경우 이벤트 수정 실패")
-    void updateEvent400_Empty() throws Exception{
-        // TODO Given
-        // TODO 이벤트 생성
-        Event event = generatesEvent(200); // setName = event + index
-        // TODO 이벤트를 수정할 DTO
+    @DisplayName("수정한 입력값이 없을 때")
+    void updateEventEmptyFieldError() throws Exception {
+        // TODO Given(이벤트 생성)
+        Event event = generatesEvent(100);
+
+        // TODO 수정한 입력값이 없을 때
         EventDto eventDto = new EventDto();
 
         // TODO When & Then
         mockMvc.perform(put("/api/events/{id}", event.getId())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
+                // TODO 400 응답확인(잘못된 요청을 보낸 경우)
                 .andExpect(status().isBadRequest())
         ;
     }
     // TODO 이벤트 수정 API-3
     @Test
-    @DisplayName("입력값이 잘못된 경우 이벤트 수정 실패")
-    void updateEvent400_Wrong() throws Exception{
-        // TODO Given
-        // TODO 이벤트 생성
+    @DisplayName("수정한 이벤트 값이 이상한 경우")
+    void updateEventWrongGlobalError() throws Exception {
+        // TODO Given(이벤트 생성)
         Event event = generatesEvent(200); // setName = event + index
+
         // TODO 이벤트를 수정할 DTO
         EventDto eventDto = modelMapper.map(event, EventDto.class);
         eventDto.setBasePrice(20000);
@@ -379,27 +386,31 @@ public class EventControllerTest {
 
         // TODO When & Then
         mockMvc.perform(put("/api/events/{id}", event.getId())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
+                // TODO 400 응답확인(잘못된 요청을 보낸 경우)
                 .andExpect(status().isBadRequest())
         ;
     }
     // TODO 이벤트 수정 API-4
     @Test
-    @DisplayName("존재하지 않는 이벤트 수정 실패")
-    void updateEvent404_Wrong() throws Exception{
-        // TODO Given
-        // TODO 이벤트 생성
-        Event event = generatesEvent(200); // setName = event + index
-        // TODO 이벤트를 수정할 DTO
+    @DisplayName("존재하지 않을 이벤트일 경우")
+    void updateEventWrong_404() throws Exception {
+        // TODO Given(이벤트 생성)
+        Event event = generatesEvent(100);
+
+        // TODO 존재하지 않을 이벤트
         EventDto eventDto = modelMapper.map(event, EventDto.class);
 
         // TODO When & Then
-        mockMvc.perform(put("/api/events/123123")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(put("/api/events/12312412")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
+                // TODO 404 응답확인(요청한 리소스가 없음)
                 .andExpect(status().isNotFound())
         ;
     }

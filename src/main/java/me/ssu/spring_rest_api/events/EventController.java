@@ -151,16 +151,15 @@ public class EventController {
 
         return ResponseEntity.ok(eventResource);
     }
-
-    // TODO Events 수정 API
-    @PutMapping("/{id}")
+    // TODO 이벤트 수정 API
+    @PutMapping("{id}")
     public ResponseEntity updateEvent(@PathVariable Integer id,
                                       @RequestBody @Valid EventDto eventDto,
                                       Errors errors) {
         // TODO Optional 검증
         Optional<Event> optionalEvent = eventRepository.findById(id);
 
-        // TODO 입력값이 비어있는 경우
+        // TODO 존재하지 않을 이벤트가 있는 경우
         if (optionalEvent.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -176,18 +175,20 @@ public class EventController {
             return badRequests(errors);
         }
 
-        // TODO Data를 Event 객체에 담기
+        // TODO 수정 전 Event Data Event 객체에 담기
         Event existingEvent = optionalEvent.get();
 
-        // TODO Event 수정
-        modelMapper.map(eventDto, existingEvent);
+        // TODO 입력값 제한하기
+        modelMapper.map(eventDto,existingEvent);
+        // TODO 이벤트 수정 Event Data DB 저장
         Event savedEvent = eventRepository.save(existingEvent);
 
-        // TODO Data를 리소스화하기
+        // TODO 리소스화
         EventResource eventResource = new EventResource(savedEvent);
 
         // TODO 문서화(profile)
-        eventResource.add(new Link("/docs/index.html#resources-events-update").withRel("profile"));
+        eventResource.add(new Link("/docs/index.html#resources-events-update")
+                .withRel("profile"));
 
         return ResponseEntity.ok(eventResource);
     }
