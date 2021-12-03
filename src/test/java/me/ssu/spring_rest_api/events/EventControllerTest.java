@@ -1,21 +1,12 @@
 package me.ssu.spring_rest_api.events;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import me.ssu.spring_rest_api.common.RestDocsConfiguration;
-import me.ssu.spring_rest_api.common.TestDescrption;
+import me.ssu.spring_rest_api.common.BaseControllerTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.stream.IntStream;
@@ -27,21 +18,10 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class EventControllerTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    // TODO Spring Boot는 자동으로 가능함.
-    @Autowired
-    ObjectMapper objectMapper;
+public class EventControllerTest extends BaseControllerTest {
 
     @Test
     @DisplayName("입력값이 제대로인 경우")
@@ -135,6 +115,7 @@ public class EventControllerTest {
                 ))
         ;
     }
+    // TODO Field Error
     @Test
     @DisplayName("입력값 이외에 에러 발생")
     void createEvent_Bad_Request() throws Exception {
@@ -238,9 +219,9 @@ public class EventControllerTest {
         ;
     }
     // TODO 이벤트 전체 목록 조회 API
-    //  이벤트 생성
     @Autowired
     EventRepository eventRepository;
+    //  이벤트 생성
     private Event generate(int index) {
         Event event = Event.builder()
                 .name("event " + index)
@@ -323,8 +304,6 @@ public class EventControllerTest {
         ;
     }
     // TODO 이벤트 수정 API-1
-    @Autowired
-    ModelMapper modelMapper;
     @Test
     @DisplayName("정상적으로 수정한 경우")
     void updateEvent() throws Exception {
