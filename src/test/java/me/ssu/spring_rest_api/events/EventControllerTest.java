@@ -44,10 +44,9 @@ public class EventControllerTest {
     ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("정상적으로 이벤트를 생성하는 테스트")
+    @DisplayName("입력값이 제대로인 경우")
     void createEvent() throws Exception {
 
-        // TODO Event -> EventDto(입력값 제한하기)
         EventDto eventDto = EventDto.builder()
                 .name("Spring")
                 .description("REST API Development with Spring")
@@ -57,7 +56,7 @@ public class EventControllerTest {
                 .closeEnrollmentDateTime(LocalDateTime
                         .of(2021,12, 24,22,30))
                 .beginEventDateTime(LocalDateTime
-                         .of(2021,12,25,22,55))
+                        .of(2021,12,25,22,55))
                 .endEventDateTime(LocalDateTime
                         .of(2021,12,26,20,00))
                 .basePrice(100)
@@ -65,25 +64,19 @@ public class EventControllerTest {
                 .limitOfEnrollment(100)
                 .build();
 
+        // TODO Location 헤더 정보 조회
         mockMvc.perform(post("/api/events")
-                    // TODO Location 헤더에 생성된 이벤트 조회할 수 있는 URI 확인
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
-                    .content(objectMapper.writeValueAsString(eventDto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
-                // TODO 201 입력값 상태 확인(isCreated())
+                // TODO 201 응답 확인(새 리소스를 성공적으로 생성함)
                 .andExpect(status().isCreated())
-                // TODO id가 있는지 확인
-                .andExpect(jsonPath("id").exists())
-                // TODO Header 정보 Test(Type Safe Version)
-                .andExpect(header().exists(HttpHeaders.LOCATION))
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
-                // TODO 저장하기 전에 유료인지 무료인지 여부 업데이트(비즈니스 로직 적용)
-                .andExpect(jsonPath("free").value(false))
-                .andExpect(jsonPath("offline").value(true))
-                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
-                // TODO RestDocs create-event 추가
-                // TODO link, Req, Res 필드와 헤더 문서화
+                // TODO HATEOAS 적용
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
+                .andExpect(jsonPath("_links.query-events").exists())
+                // TODO REST Docs
                 .andDo(document("create-event",
                         links(
                                 linkWithRel("self").description("link to self"),
@@ -142,7 +135,6 @@ public class EventControllerTest {
                 ))
         ;
     }
-
     @Test
     @DisplayName("입력값 이외에 에러 발생")
     void createEvent_Bad_Request() throws Exception {
@@ -172,38 +164,42 @@ public class EventControllerTest {
                         .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
-                // TODO 201 입력값 상태 확인(isCreated())
-                // TODO 입력값이 제대로 들어온 경우
-                // TODO isCreated -> badRequest 수정
+                // TODO 400 응답확인(잘못된 요청을 보낸 경우)
                 .andExpect(status().isBadRequest())
        ;
     }
-
+    // TODO Field Error
     @Test
-    @DisplayName("입력 데이터가 없는 경우 Bad_Request 처리하기")
-    void create_Bad_Request_Field_Error() throws Exception {
+    @DisplayName("입력값이 아예 없는 경우")
+    void createBadRequestEmpty() throws Exception {
+        // TODO Given
+        // TODO 이벤트 생성(입력값이 아예 없는 경우)
         EventDto eventDto = EventDto.builder().build();
 
+        // TODO When & Then
         mockMvc.perform(post("/api/events")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
-                // TODO Bad_Request
+                // TODO 400 응답확인(잘못된 요청을 보낸 경우)
                 .andExpect(status().isBadRequest())
-                // TODO Filed Error
+                // TODO Field Error($[0])
+                // TODO 인덱스 핸들러($[0] -> content[0])-2
                 .andExpect(jsonPath("content[0].objectName").exists())
-                .andExpect(jsonPath("content[0].defaultMessage").exists()) // 기본 메시지
-                .andExpect(jsonPath("content[0].code").exists()) // 에러 코드
-                .andExpect(jsonPath("content[0].field").exists()) // 어떤 필드에서 발생한 에러인지
-//                .andExpect(jsonPath("content[0].rejectValue").exists()) // 입력 거절 받은 값
-                // TODO 인덱스로 가는 링크 제공
+                .andExpect(jsonPath("content[0].code").exists())              // 에러 코드
+                .andExpect(jsonPath("content[0].defaultMessage").exists())    // 기본 메시지
+                .andExpect(jsonPath("content[0].field").exists())             // 어떤 필드에서 발생한 에러인지
+//                .andExpect(jsonPath("$[0].rejectedValue").exists())             // 입력 거절받은 값
+                // TODO 인덱스 핸들러(_links.index)-1
                 .andExpect(jsonPath("_links.index").exists())
         ;
-    }
 
+    }
+    // TODO Global Error
     @Test
-    @DisplayName("입력 값의 날짜 데이터가 이상한 경우 Bad_Request 처리하기")
-    void createEvent_Bad_Request_Global_Error() throws Exception {
+    @DisplayName("입력 값의 날짜 데이터가 이상한 경우")
+    void createEventBadRequestWrong() throws Exception {
         EventDto eventDto = EventDto.builder()
                 .name("Spring")
                 .description("REST API Development with Spring")
@@ -221,62 +217,59 @@ public class EventControllerTest {
                 .maxPrice(200)
                 .limitOfEnrollment(100)
                 .build();
-
         mockMvc.perform(post("/api/events")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
-                // TODO Bad_Request
+                // TODO 400 응답 처리(잘못된 요청을 보낸 경우)
                 .andExpect(status().isBadRequest())
-                .andExpect(status().isBadRequest())
-                // TODO Global Error
-                //  응답처리(Body Message, $[0](Error)) 담기
-                // TODO 인덱스로 가는 링크 제공-2
-                //  Unwrap 수정(Json에는 Unwrap가 적용 안 됨)
-                //  $[0](Error) -> content[0](ErrorsResource)
+                // TODO Global Error($[0])
+                // TODO 인덱스 핸들러($[0] -> content[0])-2
                 .andExpect(jsonPath("content[0].objectName").exists())
-                .andExpect(jsonPath("content[0].defaultMessage").exists()) // 기본 메시지
-                .andExpect(jsonPath("content[0].code").exists()) // 에러 코드
-                // TODO 인덱스로 가는 링크 제공-1
+                .andExpect(jsonPath("content[0].defaultMessage").exists())
+                .andExpect(jsonPath("content[0].code").exists())
+                // TODO _links.index(content[0])
+//                .andExpect(jsonPath("content[0].objectName").exists())
+//                .andExpect(jsonPath("content[0].defaultMessage").exists()) // 기본 메시지
+//                .andExpect(jsonPath("content[0].code").exists()) // 에러 코드
+                // TODO _links.index(content[0])
                 .andExpect(jsonPath("_links.index").exists())
         ;
     }
-    // TODO Event 30개 만들기
+    // TODO 이벤트 전체 목록 조회 API
+    //  이벤트 생성
     @Autowired
     EventRepository eventRepository;
-
-    private Event generateEvent(int index) {
+    private Event generate(int index) {
         Event event = Event.builder()
-                .name("event" + index)
-                .description("test event")
+                .name("event " + index)
+                .description("event test")
                 .build();
 
         return eventRepository.save(event);
     }
-    // TODO Event 전체 조회 API
     @Test
-    @TestDescrption("30개의 이벤트를 10개씩 두 번째 페이지 조회하기")
-    public void queryEvents() throws Exception {
-        // TODO Given
+    @DisplayName("30개의 데이터를 10개씩 두 번째 페이지 조회")
+    void queryEvents() throws Exception {
+        // TODO Given(이벤트 생성)
         IntStream.range(0, 30).forEach(i -> {
-            this.generateEvent(i);
+            generate(i);
         });
-        // TODO When & Then
+        // TODO Then(페이지 정렬)
         mockMvc.perform(get("/api/events")
                         .param("page", "1")
                         .param("size", "10")
-                        // TODO 이름 역순으로
-                        .param("sort", "name,DESC"))
+                        // TODO 이름의 역순으로
+                        .param("sort", "name,desc"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                // TODO 리소스에 하나의 링크 정보가 있는지 확인
-                // TODO 완벽한 HATEOAS가 아님(각각의 리소스에 링크가 달려야 함)
+                // TODO 전체 리소스화(PageResourceAssembler<Event>로 Page 안에 있는 Data, 리소스화하기)
                 .andExpect(jsonPath("_links").exists())
-                // TODO 각각의 리소스에 링크가 정보가 있는지 확인
+                // TODO 개별 리소스화
                 .andExpect(jsonPath("_embedded.eventList[0]._links").exists())
-                // TODO profile 링크확인
+                // TODO 문서화(profile)
                 .andExpect(jsonPath("_links.profile").exists())
-                // TODO REST Docs(문서화)
                 .andDo(document("query-events"))
         ;
     }
@@ -310,6 +303,7 @@ public class EventControllerTest {
 
         mockMvc.perform(get("/api/events/{id}", event.getId()))
                 .andDo(print())
+                // TODO 200 응답 확인(응답을 성공적으로 처리함)
                 .andExpect(status().isOk())
                 // TODO EventData에 _links 담기
                 .andExpect(jsonPath("_links").exists())
@@ -324,19 +318,17 @@ public class EventControllerTest {
         // TODO When & Then
         mockMvc.perform(get("/api/events/1231234"))
                 .andDo(print())
+                // TODO 404 응답확인(요청한 리소스가 없음)
                 .andExpect(status().isNotFound())
         ;
     }
-
+    // TODO 이벤트 수정 API-1
     @Autowired
     ModelMapper modelMapper;
-
-    // TODO 이벤트 수정 API-1
     @Test
     @DisplayName("이벤트를 정상적으로 수정하기")
     void updateEvent() throws Exception{
-        // TODO Given
-        // TODO 이벤트 생성
+        // TODO Given(이벤트 생성)
         Event event = generatesEvent(200); // setName = event + index
         // TODO 이벤트를 수정할 DTO
         EventDto eventDto = modelMapper.map(event, EventDto.class);
@@ -349,6 +341,7 @@ public class EventControllerTest {
                         .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
+                // TODO 200 응답 확인(응답을 성공적으로 처리함)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("name").value(eventName))
                 .andExpect(jsonPath("_links.self").exists())

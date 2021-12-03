@@ -103,30 +103,30 @@ public class EventController {
 
         return ResponseEntity.created(createUri).body(eventResource);
     }
-
-    // TODO Event 전체 조회 API
+    // TODO 이벤트 전체 목록 조회 API
     @GetMapping
     public ResponseEntity queryEvent(Pageable pageable,
                                      PagedResourcesAssembler<Event> assembler) {
-        // TODO 리소스로 변경하기 전(Event Data)
+        // TODO 페이징 정렬(JPA가 제공하는 Pageable)
         Page<Event> page = eventRepository.findAll(pageable);
 
-        // TODO Repository에서 받아온 Event를 리소스로 변경하기 위해 PagedResourcesAssembler<T> 사용함.
-        // TODO PagedResources<Resource<Event>>(2.1.0.RELEASE) -> PagedModel<EntityModel<Event>>(2.2.5.RELEASE)
+        // TODO 전체 리소스화하기
+        //  (PageResourceAssembler<Event>로 Page 안에 있는 Data, 리소스화하기)
+        // TODO PagedResources<Resource<Event>>(2.1.0.RELEASE)
+        //  -> PagedModel<EntityModel<Event>>(2.2.5.RELEASE)
         // TODO toResource(2.1.0.RELEASE) -> toModel(2.2.5.RELEASE)
-        //
 //        PagedResources<Resource<Event>> pagedResources = assembler.toResource(page);
 
-        // TODO 리소스(toResource(page) -> 각각의 리소스로 변경(toResource(page, e -> new EventResource(e))
+        // TODO 개별 리소스화하기
         var pagedResources = assembler
                 .toResource(page, entity -> new EventResource(entity));
 
-        // TODO profile 추가
-        pagedResources.add(new Link("/docs/index.html#resources-events-list").withRel("profile"));
+        // TODO 문서화하기
+        pagedResources.add(new Link("/docs/index.html#resources-events-list")
+                .withRel("profile"));
 
         return ResponseEntity.ok(pagedResources);
     }
-
     // TODO 이벤트 개별 조회 API
     @GetMapping("/{id}")
     public ResponseEntity getEvent(@PathVariable Integer id) {
