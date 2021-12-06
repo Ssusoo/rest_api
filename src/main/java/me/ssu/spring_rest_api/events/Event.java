@@ -1,6 +1,7 @@
 package me.ssu.spring_rest_api.events;
 
 import lombok.*;
+import me.ssu.spring_rest_api.accounts.Account;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -16,6 +17,10 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
+
+    // TODO 단방향 맵핑
+    @ManyToOne
+    private Account manager;
 
     // TODO 입력제한 Dto
     private String name; // 이벤트 이름

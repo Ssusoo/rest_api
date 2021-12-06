@@ -1,6 +1,8 @@
 package me.ssu.spring_rest_api.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.ssu.spring_rest_api.accounts.AccountRepository;
+import me.ssu.spring_rest_api.accounts.AccountService;
 import org.junit.Ignore;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,4 +30,10 @@ public class BaseControllerTest {
 
     @Autowired
     protected ModelMapper modelMapper;
+
+    @Autowired
+    protected AccountRepository accountRepository;
+
+    @Autowired
+    protected AccountService accountService;
 }

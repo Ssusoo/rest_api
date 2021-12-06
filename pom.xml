@@ -44,6 +44,12 @@
             <artifactId>modelmapper</artifactId>
             <version>2.3.1</version>
         </dependency>
+        <!-- security -->
+        <dependency>
+            <groupId>org.springframework.security.oauth.boot</groupId>
+            <artifactId>spring-security-oauth2-autoconfigure</artifactId>
+            <version>2.1.0.RELEASE</version>
+        </dependency>
         <!-- test scope -->
         <dependency>
             <groupId>com.h2database</groupId>
