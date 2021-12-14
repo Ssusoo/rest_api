@@ -19,7 +19,18 @@ public class AccountService implements UserDetailsService {
 
     @Autowired
     AccountRepository accountRepository;
-    
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    // TODO 시큐리티 폼 설정(패스워드 매칭)
+    public Account saveAccount(Account account) {
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
+
+        return accountRepository.save(account);
+    }
+
+
     // TODO 유저네임 조회(DB에서 유저 정보 불러오기)-1
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
