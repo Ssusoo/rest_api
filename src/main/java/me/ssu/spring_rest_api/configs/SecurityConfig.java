@@ -1,4 +1,4 @@
-package me.ssu.spring_rest_api.config;
+package me.ssu.spring_rest_api.configs;
 
 import me.ssu.spring_rest_api.accounts.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package me.ssu.spring_rest_api.events;
 
-import me.ssu.spring_rest_api.common.BaseControllerTest;
+import me.ssu.spring_rest_api.common.BaseTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class EventControllerTest extends BaseControllerTest {
+public class EventControllerTest extends BaseTest {
 
     @Test
     @DisplayName("입력값이 제대로인 경우")

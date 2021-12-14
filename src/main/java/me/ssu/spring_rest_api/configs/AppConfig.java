@@ -1,4 +1,4 @@
-package me.ssu.spring_rest_api.config;
+package me.ssu.spring_rest_api.configs;
 
 import me.ssu.spring_rest_api.accounts.Account;
 import me.ssu.spring_rest_api.accounts.AccountRole;

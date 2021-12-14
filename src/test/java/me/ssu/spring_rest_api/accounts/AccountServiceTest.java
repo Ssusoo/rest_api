@@ -1,18 +1,13 @@
 package me.ssu.spring_rest_api.accounts;
 
-import me.ssu.spring_rest_api.common.BaseControllerTest;
-import org.assertj.core.api.Assertions;
+import me.ssu.spring_rest_api.common.BaseTest;
 import org.assertj.core.api.AssertionsForClassTypes;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Set;
 
@@ -20,7 +15,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-class AccountServiceTest extends BaseControllerTest {
+class AccountServiceTest extends BaseTest {
 
     // TODO 동일한 유저를 저장하다보니 중복 에러 발생 처리
     @BeforeEach
