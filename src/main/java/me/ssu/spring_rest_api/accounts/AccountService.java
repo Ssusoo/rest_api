@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -18,23 +19,21 @@ public class AccountService implements UserDetailsService {
 
     @Autowired
     AccountRepository accountRepository;
-
+    
+    // TODO 유저네임 조회(DB에서 유저 정보 불러오기)-1
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // TODO username이 없으면 UsernameNotFoundException 처리
+        // TODO NotFound Error
         Account account = accountRepository.findByEmail(username)
-
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
-        // TODO User라는 Class를 이용해
-        //  Spring Security가 이해할 수 있는 UserDetails Type으로 변환-1
-        //  getRoles을 authroties으로 변환-2
+        // TODO 유저네임 조회(UserDetails Type 변환)-2
         return new User(account.getEmail(), account.getPassword(), authorities(account.getRoles()));
     }
 
+    // TODO 유저네임 조회(Roles 목록을 stream으로 map을 써서 맵핑하기)-3
     private Collection<? extends GrantedAuthority> authorities(Set<AccountRole> roles) {
-        // TODO Roles 목록을 stream으로 map을 써서 맵핑하기
-        //  collect해서 role을 SimpleGrantedAuthority 변환
+        // TODO collect해서 role을 SimpleGrantedAuthority 변환
         return roles.stream().map(r -> {
             return new SimpleGrantedAuthority("ROLE_" + r.name());
         }).collect(Collectors.toSet());

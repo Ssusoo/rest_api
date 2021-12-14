@@ -18,35 +18,36 @@ import org.springframework.security.oauth2.provider.token.store.InMemoryTokenSto
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    // TODO 시큐리티 기본 설정(사용자 세부 서비스)-3
     @Autowired
     AccountService accountService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    // TODO 토큰을 저장하는 장소
+    // TODO 시큐리티 기본 설정(토큰 저장소)-1
     @Bean
     public TokenStore tokenStore() {
         // TODO InMemoryTokenStore
-        //  기본 설정으로 사용하기 때문에
-        //  리붓되는 동시에 데이터가 초기화됨.
+        //  기본 설정으로 사용하기 때문에 리붓되는 동시에 데이터가 초기화됨.
         return new InMemoryTokenStore();
     }
-    // TODO AuthenticationManager
-    //  외부에서 사용 하기 위해, AuthenticationManagerBean 을 이용하여
-    //  Spring Security 밖으로 AuthenticationManager 빼 내야 한다.
+
+    // TODO 시큐리티 기본 설정(AuthenticationManager 빈 등록)-2
     @Bean
     @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    protected AuthenticationManager authenticationManager() throws Exception {
+        return super.authenticationManager();
     }
 
+    // TODO 시큐리티 기본 설정(사용자 세부 서비스)-3
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(accountService)
                 .passwordEncoder(passwordEncoder);
     }
-    // TODO Security filter를 적용할지 말지를 결정하는 구간
+
+    // TODO 시큐리티 기본 설정(Spring Security Filter 연결)-4
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().mvcMatchers("/docs/index.html");
