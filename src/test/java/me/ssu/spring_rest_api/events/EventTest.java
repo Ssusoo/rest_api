@@ -1,10 +1,12 @@
 package me.ssu.spring_rest_api.events;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.stream.Stream;
@@ -13,35 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class EventTest {
-
-    @Test
-    void  builder() {
-        Event event = Event.builder()
-                .name("Inflearn Spring Rest API")
-                .description("REST API development with Spring")
-                .build();
-        assertThat(event).isNotNull()
-
-        ;
-    }
-
-    @Test
-    void javaBean() {
-        // Given
-        String description = "Spring";
-        String name = "Event";
-
-        // When
-        Event event = new Event();
-        event.setName(name);
-        event.setDescription(description);
-
-        // Then
-        assertThat(event.getName()).isEqualTo(name);
-        assertThat(event.getDescription()).isEqualTo(description)
-
-        ;
-    }
+    
     // TODO 무료/유료 검증
     private static Stream<Arguments> isFree() {
         return Stream.of(

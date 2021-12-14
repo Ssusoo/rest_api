@@ -82,7 +82,7 @@ public class EventController {
 
         // TODO Repository
         // TODO Event -> EventDto
-        Event newEvent = this.eventRepository.save(event);
+        Event newEvent = eventRepository.save(event);
 
         // TODO HATEOAS 적용-1
         // TODO ControllerLinkBuilder(2.1.0.RELEASE) -> WebMvcLinkBuilder(2.2.5.RELEASE)

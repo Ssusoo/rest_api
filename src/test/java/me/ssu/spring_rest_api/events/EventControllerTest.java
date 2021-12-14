@@ -1,14 +1,20 @@
 package me.ssu.spring_rest_api.events;
 
+import me.ssu.spring_rest_api.accounts.Account;
+import me.ssu.spring_rest_api.accounts.AccountRole;
 import me.ssu.spring_rest_api.common.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
@@ -16,6 +22,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,6 +30,51 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class EventControllerTest extends BaseTest {
 
+    // TODO 엑세스 토큰()-3
+    @BeforeEach
+    public void setUp() {
+        accountRepository.deleteAll();
+        eventRepository.deleteAll();
+    }
+
+    // TODO 엑세스 토큰-2
+    private String getBearerToken() throws Exception {
+        return "Bearer " + getAccessToken();
+    }
+
+    // TODO 엑세스 토큰-1
+    private String getAccessToken() throws Exception {
+        // TODO Given(계정 만들기)
+        String username = "zzanggoon8@email.com";
+        String password = "1234";
+        Account account = Account.builder()
+                .email(username)
+                .password(password)
+                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
+                .build();
+
+        // TODO 패스워드 매칭
+        accountService.saveAccount(account);
+
+        // TODO BasicAuth Header 만들기
+        String clientId = "myApp";
+        String clientSecret = "pass";
+
+        // TODO When & Then
+
+        ResultActions perform = mockMvc.perform(post("/oauth/token")
+                .with(httpBasic(clientId, clientSecret))
+                .param("username", username)
+                .param("password", password)
+                .param("grant_type", "password"));
+
+        var responseBody = perform.andReturn().getResponse().getContentAsString();
+
+        Jackson2JsonParser parser = new Jackson2JsonParser();
+
+        return parser.parseMap(responseBody).get("access_token").toString();
+    }
+    
     @Test
     @DisplayName("입력값이 제대로인 경우")
     void createEvent() throws Exception {
@@ -46,6 +98,8 @@ public class EventControllerTest extends BaseTest {
 
         // TODO Location 헤더 정보 조회
         mockMvc.perform(post("/api/events")
+                        // TODO 토큰 인증 값 넘겨주기
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -90,7 +144,7 @@ public class EventControllerTest extends BaseTest {
                         ),
                         // TODO 응답 필드
                         // TODO 일부분만 하고 싶을 때 'relaxedResponseFields'
-                        responseFields(
+                        relaxedResponseFields(
                                 fieldWithPath("id").description("identifier of new event"),
                                 fieldWithPath("name").description("name of new event"),
                                 fieldWithPath("description").description("description of new event"),
@@ -117,40 +171,6 @@ public class EventControllerTest extends BaseTest {
     }
     // TODO Field Error
     @Test
-    @DisplayName("입력값 이외에 에러 발생")
-    void createEvent_Bad_Request() throws Exception {
-        Event event = Event.builder()
-                .id(100)
-                .free(true)
-                .location("강남역 D2 스타일 펙토리")
-                .offline(false)
-                .name("Spring")
-                .description("REST API Development with Spring")
-                .beginEnrollmentDateTime(LocalDateTime
-                        .of(2021,12, 23, 21,50))
-                .closeEnrollmentDateTime(LocalDateTime
-                        .of(2021,12, 24,22,30))
-                .beginEventDateTime(LocalDateTime
-                        .of(2021,12,25,22,55))
-                .endEventDateTime(LocalDateTime
-                        .of(2021,12,26,20,00))
-                .basePrice(100)
-                .maxPrice(200)
-                .limitOfEnrollment(100)
-                .build();
-
-        mockMvc.perform(post("/api/events")
-                        // TODO Location 헤더에 생성된 이벤트 조회할 수 있는 URI 확인
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
-                        .content(objectMapper.writeValueAsString(event)))
-                .andDo(print())
-                // TODO 400 응답확인(잘못된 요청을 보낸 경우)
-                .andExpect(status().isBadRequest())
-       ;
-    }
-    // TODO Field Error
-    @Test
     @DisplayName("입력값이 아예 없는 경우")
     void createBadRequestEmpty() throws Exception {
         // TODO Given
@@ -159,6 +179,8 @@ public class EventControllerTest extends BaseTest {
 
         // TODO When & Then
         mockMvc.perform(post("/api/events")
+                        // TODO 토큰 인증 값 넘겨주기
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -199,6 +221,8 @@ public class EventControllerTest extends BaseTest {
                 .limitOfEnrollment(100)
                 .build();
         mockMvc.perform(post("/api/events")
+                        // TODO 토큰 인증 값 넘겨주기
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -316,6 +340,8 @@ public class EventControllerTest extends BaseTest {
         eventDto.setName(eventName);
 
         mockMvc.perform(put("/api/events/{id}", event.getId())
+                        // TODO 토큰 인증 값 넘겨주기
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -343,6 +369,8 @@ public class EventControllerTest extends BaseTest {
 
         // TODO When & Then
         mockMvc.perform(put("/api/events/{id}", event.getId())
+                        // TODO 토큰 인증 값 넘겨주기
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -365,6 +393,8 @@ public class EventControllerTest extends BaseTest {
 
         // TODO When & Then
         mockMvc.perform(put("/api/events/{id}", event.getId())
+                        // TODO 토큰 인증 값 넘겨주기
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -385,6 +415,8 @@ public class EventControllerTest extends BaseTest {
 
         // TODO When & Then
         mockMvc.perform(put("/api/events/12312412")
+                        // TODO 토큰 인증 값 넘겨주기
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(eventDto)))

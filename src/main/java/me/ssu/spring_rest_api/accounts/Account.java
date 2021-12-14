@@ -6,12 +6,9 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Builder
-@Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode(of = "id")
+@Getter @Setter
+@AllArgsConstructor @NoArgsConstructor
+@Entity @EqualsAndHashCode(of = "id")
 public class Account {
 
     @Id @GeneratedValue
