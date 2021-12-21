@@ -1,4 +1,4 @@
-package me.ssu.spring_rest_api.common;
+package me.ssu.spring_rest_api.errors;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

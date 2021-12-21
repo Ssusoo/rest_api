@@ -1,13 +1,13 @@
 package me.ssu.spring_rest_api.events;
 
-import me.ssu.spring_rest_api.common.ErrorsResource;
+import me.ssu.spring_rest_api.errors.ErrorsResource;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -17,10 +17,11 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.Optional;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 
 @Controller
-@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
 public class EventController {
 
     // TODO Repository 등록
@@ -51,6 +52,16 @@ public class EventController {
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto,
                                       Errors errors) {
 
+
+        // TODO 입력값 제한하기 Dto
+        // TODO Event Dto에 있는 것을 Event 타입의 인스턴스로 만들어 달라
+        Event event = modelMapper.map(eventDto, Event.class);
+
+        // TODO ModelMapper 사용 전, 코드
+//        Event event = Event.builder()
+//                .name(eventDto.getName())
+//                .build();
+
         // TODO Field Error
         // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         if (errors.hasErrors()) {
@@ -68,15 +79,6 @@ public class EventController {
             return badRequests(errors);
         }
 
-        // TODO 입력값 제한하기 Dto
-        // TODO Event Dto에 있는 것을 Event 타입의 인스턴스로 만들어 달라
-        Event event = modelMapper.map(eventDto, Event.class);
-
-        // TODO ModelMapper 사용 전, 코드
-//        Event event = Event.builder()
-//                .name(eventDto.getName())
-//                .build();
-
         // TODO 저장하기 전에 유료인지 무료인지 여부 업데이트(비즈니스 로직 적용)
         event.update();
 
@@ -86,7 +88,7 @@ public class EventController {
 
         // TODO HATEOAS 적용-1
         // TODO ControllerLinkBuilder(2.1.0.RELEASE) -> WebMvcLinkBuilder(2.2.5.RELEASE)
-        ControllerLinkBuilder selfLinkBuilder = linkTo(EventController.class)
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class)
                 .slash(newEvent.getId());
         URI createUri = selfLinkBuilder
                 .toUri();
@@ -119,7 +121,7 @@ public class EventController {
 
         // TODO 개별 리소스화하기
         var pagedResources = assembler
-                .toResource(page, entity -> new EventResource(entity));
+                .toModel(page, entity -> new EventResource(entity));
 
         // TODO 문서화하기
         pagedResources.add(new Link("/docs/index.html#resources-events-list")
@@ -152,7 +154,7 @@ public class EventController {
         return ResponseEntity.ok(eventResource);
     }
     // TODO 이벤트 수정 API
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity updateEvent(@PathVariable Integer id,
                                       @RequestBody @Valid EventDto eventDto,
                                       Errors errors) {
