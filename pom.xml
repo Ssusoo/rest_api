@@ -119,7 +119,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>
-                                ${project.build.outputDirectory}/static/docs
+                                target/classes/static/docs
                             </outputDirectory>
                             <resources>
                                 <resource>
