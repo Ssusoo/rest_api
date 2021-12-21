@@ -14,6 +14,8 @@ public class Account {
     @Id @GeneratedValue
     private Integer id;
 
+    // TODO 계속해서 저장이 안 되도록
+    @Column(unique = true)
     private String email;
 
     private String password;

@@ -1,5 +1,7 @@
 package me.ssu.spring_rest_api.events;
 
+import me.ssu.spring_rest_api.accounts.Account;
+import me.ssu.spring_rest_api.accounts.CurrentUser;
 import me.ssu.spring_rest_api.errors.ErrorsResource;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -7,7 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -40,112 +44,130 @@ public class EventController {
         this.eventValidator = eventValidator;
     }
 
-    // TODO new ErrorsResource 리팩토링
-    private ResponseEntity<ErrorsResource> badRequests(Errors errors) {
-        // TODO 에러를 그냥 error로 던지는 게 아니라 ErrorsResource로 바꿔서 던짐.
-        // TODO errors -> new ErrorsResource(errors)
+    // TODO Index Handler
+    public ResponseEntity badRequests(Errors errors) {
         return ResponseEntity.badRequest().body(new ErrorsResource(errors));
     }
 
+    // TODO 이벤트 생성 API
     @PostMapping
-    // TODO Event -> EventDto
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto,
-                                      Errors errors) {
+                                      Errors errors,
+                                      @CurrentUser Account currentUser) {
 
-
-        // TODO 입력값 제한하기 Dto
-        // TODO Event Dto에 있는 것을 Event 타입의 인스턴스로 만들어 달라
+        // TODO 입력값 제한하기
         Event event = modelMapper.map(eventDto, Event.class);
 
-        // TODO ModelMapper 사용 전, 코드
-//        Event event = Event.builder()
-//                .name(eventDto.getName())
-//                .build();
-
         // TODO Field Error
-        // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         if (errors.hasErrors()) {
-            // return ResponseEntity.badRequest().body(errors);
-            // TODO Bad_Request 리팩토링
+            // TODO 인덱스 핸들러
             return badRequests(errors);
+//            return ResponseEntity.badRequest().body(errors);
         }
 
         // TODO Global Error
-        // TODO .build - > .body(errors), JavaBean 준수 객체가 아님.
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
-            // return ResponseEntity.badRequest().body(errors);
-            // TODO Bad_Request 리팩토링
+            // TODO 인덱스 핸들러
             return badRequests(errors);
+//            return ResponseEntity.badRequest().body(errors);
         }
 
-        // TODO 저장하기 전에 유료인지 무료인지 여부 업데이트(비즈니스 로직 적용)
+        // TODO 비즈니스 로직 적용
         event.update();
 
+        // TODO 현재 사용자(Manager를 현재 사용자 유저)
+        event.setManager(currentUser);
+
         // TODO Repository
-        // TODO Event -> EventDto
         Event newEvent = eventRepository.save(event);
 
         // TODO HATEOAS 적용-1
-        // TODO ControllerLinkBuilder(2.1.0.RELEASE) -> WebMvcLinkBuilder(2.2.5.RELEASE)
         WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class)
                 .slash(newEvent.getId());
+
+        // TODO Location 헤더 정보
         URI createUri = selfLinkBuilder
                 .toUri();
 
         // TODO HATEOAS 적용-2
-        EventResource eventResource = new EventResource(event);
+        EventResource eventResource = new EventResource(newEvent);
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(selfLinkBuilder.withRel("update-event"));
-        // TODO _links.self, EventResource로 이동
+        // TODO _links.self
 //        eventResource.add(selfLinkBuilder.withSelfRel());
 
-        // TODO REST Docs(profile) 추가
+        // TODO 문서화
         eventResource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
 
         return ResponseEntity.created(createUri).body(eventResource);
     }
-    // TODO 이벤트 전체 목록 조회 API
+
+    // TODO 이벤트 전체 목록 API
     @GetMapping
-    public ResponseEntity queryEvent(Pageable pageable,
-                                     PagedResourcesAssembler<Event> assembler) {
-        // TODO 페이징 정렬(JPA가 제공하는 Pageable)
+    public ResponseEntity queryEvents(Pageable pageable,
+                                      PagedResourcesAssembler<Event> assembler,
+                                      // TODO 현재 사용자(Spring Security를 바로 주입받을 수 있음)-3
+                                      // TODO 현재 사용자-4
+                                      // TODO User -> AccountAdapter로 변경
+                                      // TODO @CurrentUser(커스텀 어노테이션)
+                                      @CurrentUser Account currentUser) {
+
+        // TODO 현재 사용자(인증정보 꺼내기(자바 ThreadLocal 기반))-1
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // TODO 현재 사용자(AccountService에 있는 User)-2
+//        User principal = (User) authentication.getPrincipal();
+
+        // TODO 페이징 정렬
         Page<Event> page = eventRepository.findAll(pageable);
 
-        // TODO 전체 리소스화하기
-        //  (PageResourceAssembler<Event>로 Page 안에 있는 Data, 리소스화하기)
-        // TODO PagedResources<Resource<Event>>(2.1.0.RELEASE)
-        //  -> PagedModel<EntityModel<Event>>(2.2.5.RELEASE)
-        // TODO toResource(2.1.0.RELEASE) -> toModel(2.2.5.RELEASE)
-//        PagedResources<Resource<Event>> pagedResources = assembler.toResource(page);
+        // TODO 전체 리소스화
+//        PagedModel<EntityModel<Event>> pagedResources = assembler.toModel(page);
 
-        // TODO 개별 리소스화하기
-        var pagedResources = assembler
+        // TODO 개별 리스소화
+        PagedModel<EventResource> pagedResources = assembler
                 .toModel(page, entity -> new EventResource(entity));
 
         // TODO 문서화하기
         pagedResources.add(new Link("/docs/index.html#resources-events-list")
                 .withRel("profile"));
 
+        // TODO 현재 사용자(인증한 경우, UserDetails에 접근이 가능함)
+        // TODO 있는지 없는지 유무이기 때문에 이런 경우 딱히 유저 정보를 참조할 필요가 없음.
+        // TODO Spring Security의 인증정보를 받아도 됨.
+        if (currentUser != null) {
+            pagedResources.add(linkTo(EventController.class).withRel("create-event"));
+        }
+
         return ResponseEntity.ok(pagedResources);
     }
+
     // TODO 이벤트 개별 조회 API
     @GetMapping("/{id}")
-    public ResponseEntity getEvent(@PathVariable Integer id) {
+    public ResponseEntity getEvent(@PathVariable Integer id,
+                                   @CurrentUser Account currentUser) {
 
-        // TODO DB Data Optional에 담기
+
+        // TODO Optional 검증
         Optional<Event> optionalEvent = eventRepository.findById(id);
 
-        // TODO 조회한 데이터가 없는 경우
+        // TODO 데이터가 존재하지 않은 경우
         if (optionalEvent.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        // TODO Event 객체에 담기
+        // TODO 객체에 담기
         Event event = optionalEvent.get();
 
         // TODO 리소스화 하기
         EventResource eventResource = new EventResource(event);
+
+        // TODO 현재 사용자
+        if (event.getManager().equals(currentUser)) {
+            eventResource.add(linkTo(EventController.class)
+                    .slash(event.getId()).withRel("update-event"));
+        }
 
         // TODO 문서화
         eventResource.add(new Link("/docs/index.html#resources-events-get")
@@ -153,15 +175,18 @@ public class EventController {
 
         return ResponseEntity.ok(eventResource);
     }
-    // TODO 이벤트 수정 API
+
+    // TODO 이벤트 수정 조회 API
     @PutMapping("/{id}")
     public ResponseEntity updateEvent(@PathVariable Integer id,
                                       @RequestBody @Valid EventDto eventDto,
-                                      Errors errors) {
+                                      Errors errors,
+                                      @CurrentUser Account currentUser) {
+
         // TODO Optional 검증
         Optional<Event> optionalEvent = eventRepository.findById(id);
 
-        // TODO 존재하지 않을 이벤트가 있는 경우
+        // TODO NotFound Error
         if (optionalEvent.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -177,21 +202,26 @@ public class EventController {
             return badRequests(errors);
         }
 
-        // TODO 수정 전 Event Data Event 객체에 담기
+        // TODO 수정 전
         Event existingEvent = optionalEvent.get();
 
-        // TODO 입력값 제한하기
-        modelMapper.map(eventDto,existingEvent);
-        // TODO 이벤트 수정 Event Data DB 저장
+        // TODO 현재 이벤트의 매니저가 현재 사용자가 아닌 경우
+        if (!existingEvent.getManager().equals(currentUser)) {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+
+        modelMapper.map(eventDto, existingEvent);
+
+        // TODO 수정 후
         Event savedEvent = eventRepository.save(existingEvent);
 
-        // TODO 리소스화
+        // TODO 리소스화하기
         EventResource eventResource = new EventResource(savedEvent);
 
         // TODO 문서화(profile)
-        eventResource.add(new Link("/docs/index.html#resources-events-update")
-                .withRel("profile"));
+        eventResource.add(new Link("/docs/index.html#resources-events-update").withRel("profile"));
 
         return ResponseEntity.ok(eventResource);
     }
 }
+

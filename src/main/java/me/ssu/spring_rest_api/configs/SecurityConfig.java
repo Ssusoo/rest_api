@@ -36,8 +36,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // TODO 시큐리티 기본 설정(AuthenticationManager 빈 등록)-2
     @Bean
     @Override
-    protected AuthenticationManager authenticationManager() throws Exception {
-        return super.authenticationManager();
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 
     // TODO 시큐리티 기본 설정(사용자 세부 서비스)-3

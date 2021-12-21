@@ -1,7 +1,9 @@
 package me.ssu.spring_rest_api.events;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import me.ssu.spring_rest_api.accounts.Account;
+import me.ssu.spring_rest_api.accounts.AccountSerializer;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ public class Event {
 
     // TODO 단방향 맵핑
     @ManyToOne
+    @JsonSerialize(using = AccountSerializer.class)
     private Account manager;
 
     // TODO 입력제한 Dto

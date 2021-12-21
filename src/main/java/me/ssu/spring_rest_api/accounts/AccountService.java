@@ -1,18 +1,11 @@
 package me.ssu.spring_rest_api.accounts;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -39,14 +32,21 @@ public class AccountService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
         // TODO 유저네임 조회(UserDetails Type 변환)-2
-        return new User(account.getEmail(), account.getPassword(), authorities(account.getRoles()));
+        // TODO 현재 사용자-1
+        // TODO @AuthenticationPrincipal User user를 받아오는 객체를 바꿔야 함.
+        // TODO 우리가 만든 Account를 만든 걸 알고 있는 객체로 바꿔야함. AccountAdapter Class 생성
+        // TODO User를 상속받은 AccountAdapter이기 때문에 결과적으로 AccountAdapter를 리턴해도 됨.
+        // TODO EventController에서는 결국 AccountAdapter를 받을 수 있음.
+        return new AccountAdapter(account);
     }
 
     // TODO 유저네임 조회(Roles 목록을 stream으로 map을 써서 맵핑하기)-3
-    private Collection<? extends GrantedAuthority> authorities(Set<AccountRole> roles) {
-        // TODO collect해서 role을 SimpleGrantedAuthority 변환
-        return roles.stream().map(r -> {
-            return new SimpleGrantedAuthority("ROLE_" + r.name());
-        }).collect(Collectors.toSet());
-    }
+    // TODO 현재 사용자-2
+    // TODO AccountAdapter로 구현을 했기 때문에 지워 줌.
+//    private Collection<? extends GrantedAuthority> authorities(Set<AccountRole> roles) {
+//        // TODO collect해서 role을 SimpleGrantedAuthority 변환
+//        return roles.stream().map(r -> {
+//            return new SimpleGrantedAuthority("ROLE_" + r.name());
+//        }).collect(Collectors.toSet());
+//    }
 }
