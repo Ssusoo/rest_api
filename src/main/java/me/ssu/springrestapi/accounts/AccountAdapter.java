@@ -18,6 +18,7 @@ public class AccountAdapter extends User {
     }
 
     public AccountAdapter(Account account) {
+        // TODO 부모 new User(account.getEmail(), account.getPassword(), authorities(account.getRoles()))
         super(account.getEmail(), account.getPassword(), authorities(account.getRoles()));
         this.account = account;
     }
