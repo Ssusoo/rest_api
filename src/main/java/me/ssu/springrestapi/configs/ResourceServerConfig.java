@@ -8,6 +8,11 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 
+/**
+ * 리로스 서버(요청 인증 처리)
+ *  토큰 기반으로 인증정보가 있는 없는지 확인 유무 파악(토큰 검사)
+ *  이 값은 현재 고칠 수 없음
+ */
 @Configuration
 @EnableResourceServer
 // TODO 리소스 서버는 토큰 기반으로 인증 정보가 있는지 없는지 확인 유무 파악.
