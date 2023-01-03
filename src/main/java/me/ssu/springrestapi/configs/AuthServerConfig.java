@@ -14,8 +14,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 /**
- * 인증 서버
- *  OAuth2 토큰 발행(/oauth/token) 및 토큰 인증(/oauth/authorize)
+ * 인증 서버(토큰 발행 / 토큰 인증)
+ *  리소스 서버보다 우선 순위가 높다.
  */
 @Configuration
 @EnableAuthorizationServer
